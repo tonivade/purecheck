@@ -77,6 +77,10 @@ public class TestCase<E, T> {
     return when -> then -> new TestCase<>(name, when, then);
   }
   
+  public static <E, T> TestFactory<E, T> factory() {
+    return new TestFactory<E, T>() { };
+  }
+  
   /**
    * It describe the step to define the operation to run by a test case
    *  
