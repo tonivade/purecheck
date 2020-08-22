@@ -3,6 +3,10 @@ package com.github.tonivade.purecheck;
 import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
 
+import java.io.Serializable;
+import java.util.Objects;
+
+import com.github.tonivade.purefun.Equal;
 import com.github.tonivade.purefun.type.Validation;
 import com.github.tonivade.purefun.type.Validation.Result;
 
@@ -14,8 +18,15 @@ import com.github.tonivade.purefun.type.Validation.Result;
  * @param <E> type of the error
  * @param <T> type of the value
  */
-public class TestResult<E, T> {
+public class TestResult<E, T> implements Serializable {
   
+  private static final long serialVersionUID = 994055897849193241L;
+  
+  private static final Equal<TestResult<?, ?>> EQUAL = Equal.<TestResult<?, ?>>of()
+      .comparing(x -> x.name)
+      .comparing(x -> x.value)
+      .comparing(x -> x.result);
+
   private final String name;
   private final T value;
   private final Validation<Result<E>, T> result;
@@ -32,6 +43,30 @@ public class TestResult<E, T> {
     this.name = checkNonEmpty(name);
     this.value = checkNonNull(value);
     this.result = checkNonNull(result);
+  }
+  
+  public boolean isSuccess() {
+    return result.isValid();
+  }
+  
+  public boolean isFailure() {
+    return result.isInvalid();
+  }
+  
+  public void assertion() {
+    if (isFailure()) {
+      throw new AssertionError(toString());
+    }
+  }
+  
+  @Override
+  public boolean equals(Object obj) {
+    return EQUAL.applyTo(this, obj);
+  }
+  
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, value, result);
   }
   
   @Override
