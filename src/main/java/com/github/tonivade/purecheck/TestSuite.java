@@ -1,6 +1,7 @@
 package com.github.tonivade.purecheck;
 
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
+import static com.github.tonivade.purefun.concurrent.Par.traverse;
 
 import java.util.concurrent.Executor;
 
@@ -19,14 +20,14 @@ import com.github.tonivade.purefun.data.Sequence;
  */
 public class TestSuite<E> {
 
-  private final NonEmptyList<TestCase<E, Object>> tests;
+  private final NonEmptyList<TestCase<E, ?>> tests;
   
   /**
    * It will throw {@code NullPointerException} if the tests is null
    * 
    * @param tests list of tests
    */
-  private TestSuite(NonEmptyList<TestCase<E, Object>> tests) {
+  private TestSuite(NonEmptyList<TestCase<E, ?>> tests) {
     this.tests = checkNonNull(tests);
   }
   
@@ -39,8 +40,8 @@ public class TestSuite<E> {
    * 
    * @return the result of the suite
    */
-  public Sequence<TestResult<E, Object>> run() {
-    return tests.map(TestCase::unsafeRun);
+  public TestReport<E> run() {
+    return new TestReport<>(tests.map(TestCase::unsafeRun));
   }
 
   /**
@@ -49,12 +50,28 @@ public class TestSuite<E> {
    * @param executor
    * @return the result of the suite
    */
-  public Sequence<TestResult<E, Object>> parRun(Executor executor) {
-    NonEmptyList<Par<TestResult<E, Object>>> map = tests.map(TestCase::asyncRun);
+  public TestReport<E> parRun(Executor executor) {
+    /*
+     * I think that a will never undestand java generics:
+     * 
+     * purecheck/src/main/java/com/github/tonivade/purecheck/TestSuite.java:53: error: incompatible types: inference variable R has incompatible bounds
+     * Sequence<Par<TestResult<E, ?>>> map = tests.map(TestCase::asyncRun);
+     *                                             ^
+     *   equality constraints: Par<TestResult<E#2,?>>
+     *   lower bounds: Par<TestResult<E#2,CAP#1>>
+     * where R,E#1,E#2 are type-variables:
+     *   R extends Object declared in method <R>map(Function1<E#1,R>)
+     *   E#1 extends Object declared in class NonEmptyList
+     *   E#2 extends Object declared in class TestSuite
+     * where CAP#1 is a fresh type-variable:
+     *   CAP#1 extends Object from capture of ?
+     * 1 error
+     * 
+     * Using Class.cast() as workaround
+     */
+    Sequence<Par<TestResult<E, ?>>> map = Sequence.class.cast(tests.map(TestCase::asyncRun));
     
-    Par<Sequence<TestResult<E, Object>>> traverse = Par.traverse(map);
-    
-    return traverse.run(executor).get().getOrElseThrow(RuntimeException::new);
+    return new TestReport<>(traverse(map).run(executor).get().getOrElseThrow(RuntimeException::new));
   }
   
   @SuppressWarnings("unchecked")
