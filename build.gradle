@@ -1,0 +1,93 @@
+apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'jacoco'
+apply plugin: 'com.bmuschko.nexus'
+apply plugin: 'com.diffplug.eclipse.apt'
+
+group = 'com.github.tonivade'
+archivesBaseName = 'purecheck'
+version = '0.1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+buildscript {
+  repositories {
+    mavenCentral()
+    jcenter()
+  }
+
+  dependencies {
+    classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
+    classpath 'com.diffplug.gradle:goomph:3.23.0'
+  }
+}
+
+jacoco {
+  toolVersion = '0.8.5'
+}
+
+repositories {
+  mavenLocal() 
+  mavenCentral()
+  maven {
+    url = 'https://oss.sonatype.org/content/repositories/snapshots'
+  }
+}
+
+test {
+  useJUnitPlatform()
+}
+
+dependencies {
+  annotationProcessor 'com.github.tonivade:purefun-processor:2.1-SNAPSHOT'
+  api 'com.github.tonivade:purefun-free:2.1-SNAPSHOT'
+  implementation 'com.github.tonivade:purefun-effect:2.1-SNAPSHOT'
+  implementation 'com.github.tonivade:purefun-stream:2.1-SNAPSHOT'
+  implementation 'com.github.tonivade:purefun-instances:2.1-SNAPSHOT'
+  testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
+  testImplementation 'org.junit.platform:junit-platform-runner:1.6.2'
+}
+
+modifyPom {
+  project {
+    name 'PureCheck'
+    description 'Pure Functional Testing Library'
+    url 'https://github.com/tonivade/purecfg'
+    inceptionYear '2020'
+
+    scm {
+      url 'https://github.com/tonivade/purecheck'
+      connection 'scm:https://github.com/tonivade/purecheck.git'
+      developerConnection 'scm:git://github.com/tonivade/purecheck.git'
+    }
+
+    licenses {
+      license {
+        name 'The MIT License (MIT)'
+        url 'https://github.com/tonivade/purecheck/blob/master/LICENSE'
+        distribution 'repo'
+      }
+    }
+
+    developers {
+      developer {
+        id 'tonivade'
+        name 'Antonio Muñoz'
+        email 'antoniogmc@gmail.com'
+      }
+    }
+  }
+}
+
+extraArchive {
+  sources = true
+  tests = false
+  javadoc = true
+}
+
+nexus {
+  sign = true
+  repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2'
+  snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots'
+}
