@@ -6,6 +6,7 @@ import static com.github.tonivade.purefun.Precondition.checkNonNull;
 import com.github.tonivade.purefun.Validator;
 import com.github.tonivade.purefun.concurrent.Par;
 import com.github.tonivade.purefun.monad.IO;
+import com.github.tonivade.purefun.type.Try;
 import com.github.tonivade.purefun.type.Validation.Result;
 
 /**
@@ -53,8 +54,12 @@ public class TestCase<E, T> {
    * @return the validation result
    */
   public TestResult<E, T> unsafeRun() {
-    T value = when.unsafeRunSync();
-    return new TestResult<>(name, value, then.validate(value));
+    Try<T> result = when.safeRunSync();
+
+    return result.fold(e -> new TestResult.Error<E, T>(name, e),
+        value -> then.validate(value).fold(
+            r -> new TestResult.Failure<E, T>(name, value, r),
+            t -> new TestResult.Success<E, T>(name, t)));
   }
   
   /**

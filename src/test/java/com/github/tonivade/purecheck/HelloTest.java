@@ -19,17 +19,21 @@ public class HelloTest extends TestSpec<String, String> {
   
   @Test
   public void testHello() {
-    var name = "Toni";
+    String name = "Toni";
 
-    var test1 = it.should("say hello")
+    TestCase<String, String> test1 = it.should("say hello")
         .when(hello(name))
         .then(combine(startsWith("Hello"), endsWith(name)));
 
-    var test2 = it.should("don't say goodbye")
+    TestCase<String, String> test2 = it.should("don't say goodbye")
         .when(hello(name))
         .then(combine(startsWith("Bye"), endsWith(name)));
 
-    var result = suite(test1, test2).parRun(DEFAULT_EXECUTOR);
+    TestCase<String, String> test3 = it.should("catch exceptions")
+        .when(IO.raiseError(new RuntimeException()))
+        .then(combine(startsWith("Bye"), endsWith(name)));
+
+    TestReport<String> result = suite(test1, test2, test3).parRun(DEFAULT_EXECUTOR);
     
     System.out.println(result);
     
