@@ -1,11 +1,11 @@
 package com.github.tonivade.purecheck;
 
+import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
 
 import com.github.tonivade.purefun.Validator;
 import com.github.tonivade.purefun.concurrent.Par;
 import com.github.tonivade.purefun.monad.IO;
-import com.github.tonivade.purefun.type.Validation;
 import com.github.tonivade.purefun.type.Validation.Result;
 
 /**
@@ -18,6 +18,11 @@ import com.github.tonivade.purefun.type.Validation.Result;
  * @param <T> type under test
  */
 public class TestCase<E, T> {
+  
+  /**
+   * Name of the test case
+   */
+  private final String name;
 
   /**
    * Operation under test that returns a value {@code T}
@@ -35,7 +40,8 @@ public class TestCase<E, T> {
    * @param when
    * @param then
    */
-  private TestCase(IO<T> when, Validator<Result<E>, T> then) {
+  private TestCase(String name, IO<T> when, Validator<Result<E>, T> then) {
+    this.name = checkNonEmpty(name);
     this.when = checkNonNull(when);
     this.then = checkNonNull(then);
   }
@@ -45,16 +51,20 @@ public class TestCase<E, T> {
    * 
    * @return the validation result
    */
-  public Validation<Result<E>, T> unsafeRun() {
-    return then.validate(when.unsafeRunSync());
+  public TestResult<E, T> unsafeRun() {
+    return new TestResult<>(name, then.validate(when.unsafeRunSync()));
   }
   
-  public Par<Validation<Result<E>, T>> asyncRun() {
+  public Par<TestResult<E, T>> asyncRun() {
     return Par.task(this::unsafeRun);
   }
   
   public static <E, T> TestCaseBuilder<E, T> test() {
-    return when -> then -> new TestCase<>(when, then);
+    return name -> when -> then -> new TestCase<>(name, when, then);
+  }
+  
+  public interface NameStep<E, T> {
+    WhenStep<E, T> name(String name);
   }
   
   public interface WhenStep<E, T> {
@@ -65,5 +75,5 @@ public class TestCase<E, T> {
     TestCase<E, T> then(Validator<Result<E>, T> validator);
   }
   
-  public interface TestCaseBuilder<E, T> extends WhenStep<E, T> { }
+  public interface TestCaseBuilder<E, T> extends NameStep<E, T> { }
 }
