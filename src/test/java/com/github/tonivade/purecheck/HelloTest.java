@@ -1,7 +1,6 @@
 package com.github.tonivade.purecheck;
 
 import static com.github.tonivade.purecheck.TestSuite.suite;
-import static com.github.tonivade.purefun.Validator.combine;
 import static com.github.tonivade.purefun.Validator.endsWith;
 import static com.github.tonivade.purefun.Validator.equalsTo;
 import static com.github.tonivade.purefun.Validator.startsWith;
@@ -17,17 +16,17 @@ import com.github.tonivade.purefun.type.Try;
 
 public class HelloTest extends TestSpec<String, String> {
   
-  private IO<String> hello(String name) {
+  private static IO<String> hello(String name) {
     return printThreadName()
         .andThen(IO.task(() -> "Hello " + name));
   }
 
-  private IO<String> error() {
+  private static IO<String> error() {
     return printThreadName()
         .andThen(IO.raiseError(new RuntimeException()));
   }
 
-  private IO<Unit> printThreadName() {
+  private static IO<Unit> printThreadName() {
     return IO.exec(() -> System.out.println(currentThread().getName()));
   }
   
@@ -45,7 +44,7 @@ public class HelloTest extends TestSpec<String, String> {
 
     TestCase<String, String> test3 = it.should("catch exceptions")
         .when(error())
-        .then(combine(startsWith("Bye"), endsWith(name)));
+        .then(startsWith("Bye").combine(endsWith(name)));
 
     Try<TestReport<String>> result = 
         suite("some tests suite", test1, test2, test3).parRun(DEFAULT_EXECUTOR).get();

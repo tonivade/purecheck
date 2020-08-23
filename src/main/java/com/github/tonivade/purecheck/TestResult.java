@@ -71,7 +71,9 @@ public interface TestResult<E, T> {
       return false;
     }
 
-    public void assertion() { }
+    public void assertion() {
+      // nothing to do
+    }
 
     @Override
     public boolean equals(Object obj) {

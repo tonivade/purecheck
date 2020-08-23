@@ -57,10 +57,10 @@ public class TestCase<E, T> {
   public TestResult<E, T> unsafeRun() {
     Try<T> result = when.safeRunSync();
 
-    return result.fold(e -> new TestResult.Error<E, T>(name, e),
+    return result.fold(e -> new TestResult.Error<>(name, e),
         value -> then.validate(value).fold(
-            r -> new TestResult.Failure<E, T>(name, value, r),
-            t -> new TestResult.Success<E, T>(name, t)));
+            r -> new TestResult.Failure<>(name, value, r),
+            t -> new TestResult.Success<>(name, t)));
   }
   
   /**
