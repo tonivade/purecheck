@@ -3,9 +3,11 @@ package com.github.tonivade.purecheck;
 import static com.github.tonivade.purecheck.TestSuite.suite;
 import static com.github.tonivade.purefun.Validator.endsWith;
 import static com.github.tonivade.purefun.Validator.equalsTo;
+import static com.github.tonivade.purefun.Validator.instanceOf;
 import static com.github.tonivade.purefun.Validator.startsWith;
 import static com.github.tonivade.purefun.concurrent.Future.DEFAULT_EXECUTOR;
 import static java.lang.Thread.currentThread;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
@@ -44,7 +46,7 @@ public class HelloTest extends TestSpec<String, String> {
 
     TestCase<String, String> test3 = it.should("catch exceptions")
         .when(error())
-        .then(startsWith("Bye").combine(endsWith(name)));
+        .onSuccess(startsWith("Bye").combine(endsWith(name)));
 
     Try<TestReport<String>> result = 
         suite("some tests suite", test1, test2, test3).parRun(DEFAULT_EXECUTOR).get();
@@ -52,5 +54,18 @@ public class HelloTest extends TestSpec<String, String> {
     System.out.println(result.get());
     
     assertThrows(AssertionError.class, () -> result.get().forEach(TestResult::assertion));
+  }
+  
+  @Test
+  public void testOnError() {
+    TestCase<String, String> test = it.should("check if it fails")
+        .when(error())
+        .error(instanceOf(RuntimeException.class));
+
+    TestReport<String> result = suite("some tests suite", test).run();
+    
+    System.out.println(result);
+    
+    assertDoesNotThrow(() -> result.forEach(TestResult::assertion));
   }
 }

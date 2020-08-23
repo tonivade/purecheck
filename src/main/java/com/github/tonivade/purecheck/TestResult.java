@@ -14,6 +14,7 @@ import java.util.Objects;
 import com.github.tonivade.purefun.Equal;
 import com.github.tonivade.purefun.HigherKind;
 import com.github.tonivade.purefun.Recoverable;
+import com.github.tonivade.purefun.type.Either;
 import com.github.tonivade.purefun.type.Validation.Result;
 
 /**
@@ -44,7 +45,7 @@ public interface TestResult<E, T> {
         .comparing(x -> x.value);
 
     private final String name;
-    private final T value;
+    private final Either<Throwable, T> value;
 
     /**
      * it will throw a {@code NullPointerException} if any of the params are null
@@ -53,7 +54,7 @@ public interface TestResult<E, T> {
      * @param name name of the test, non empty value
      * @param value result of the oeration under test
      */
-    protected Success(String name, T value) {
+    protected Success(String name, Either<Throwable, T> value) {
       this.name = checkNonEmpty(name);
       this.value = checkNonNull(value);
     }
@@ -87,7 +88,8 @@ public interface TestResult<E, T> {
 
     @Override
     public String toString() {
-      return String.format("test '%s' SUCCESS: '%s'", name, value);
+      return String.format("test '%s' SUCCESS: '%s'", 
+          name, value.fold(Object::toString, Object::toString));
     }
   }
 
@@ -101,7 +103,7 @@ public interface TestResult<E, T> {
         .comparing(x -> x.result);
 
     private final String name;
-    private final T value;
+    private final Either<Throwable, T> value;
     private final Result<E> result;
 
     /**
@@ -112,7 +114,7 @@ public interface TestResult<E, T> {
      * @param value result of the oeration under test
      * @param result result of the validation applied to the value
      */
-    protected Failure(String name, T value, Result<E> result) {
+    protected Failure(String name, Either<Throwable, T> value, Result<E> result) {
       this.name = checkNonEmpty(name);
       this.value = checkNonNull(value);
       this.result = checkNonNull(result);
@@ -147,7 +149,8 @@ public interface TestResult<E, T> {
 
     @Override
     public String toString() {
-      return String.format("test '%s' FAILURE: expected '%s' but was '%s'", name, result.join(","), value);
+      return String.format("test '%s' FAILURE: expected '%s' but was '%s'", 
+          name, result.join(","), value.fold(Object::toString, Object::toString));
     }
   }
 
@@ -157,10 +160,10 @@ public interface TestResult<E, T> {
 
     private static final Equal<Error<?, ?>> EQUAL = Equal.<Error<?, ?>>of()
         .comparing(x -> x.name)
-        .comparingArray(x -> x.error.getStackTrace());
+        .comparing(x -> x.error);
 
     private final String name;
-    private final Throwable error;
+    private final Either<Throwable, T> error;
 
     /**
      * it will throw a {@code NullPointerException} if any of the params are null
@@ -169,7 +172,7 @@ public interface TestResult<E, T> {
      * @param name name of the test, non empty value
      * @param error error captured by the test
      */
-    protected Error(String name, Throwable error) {
+    protected Error(String name, Either<Throwable, T> error) {
       this.name = checkNonEmpty(name);
       this.error = checkNonNull(error);
     }
@@ -188,7 +191,9 @@ public interface TestResult<E, T> {
     }
 
     public void assertion() {
-      sneakyThrow(error);
+      error.fold(
+          throwable -> sneakyThrow(throwable), 
+          value -> new AssertionError());
     }
 
     @Override
@@ -203,7 +208,8 @@ public interface TestResult<E, T> {
 
     @Override
     public String toString() {
-      return String.format("test '%s' ERROR: %s", name, full(error));
+      return String.format("test '%s' ERROR: %s", 
+          name, error.fold(Error::full, Object::toString));
     }
 
     private static String full(Throwable error) {
