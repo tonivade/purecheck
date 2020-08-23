@@ -40,20 +40,18 @@ public class HelloTest extends TestSpec<String, String> {
   public void testHello() {
     String name = "Toni";
 
-    TestCase<String, String> test1 = it.should("say hello")
-        .when(hello(name))
-        .thenCheck(equalsTo("Hello Toni"));
-
-    TestCase<String, String> test2 = it.should("don't say goodbye")
-        .when(hello(name))
-        .thenCheck(startsWith("Bye"));
-
-    TestCase<String, String> test3 = it.should("catch exceptions")
-        .when(error())
-        .onSuccess(startsWith("Bye").combine(endsWith(name)));
-
     Try<TestReport<String>> result = 
-        suite("some tests suite", test1, test2, test3).parRun(DEFAULT_EXECUTOR).get();
+        suite("some tests suite", 
+            it.should("say hello")
+              .when(hello(name))
+              .thenCheck(equalsTo("Hello Toni")), 
+            it.should("don't say goodbye")
+              .when(hello(name))
+              .thenCheck(startsWith("Bye")), 
+            it.should("catch exceptions")
+              .when(error())
+              .onSuccess(startsWith("Bye").combine(endsWith(name)))
+          ).parRun(DEFAULT_EXECUTOR).get();
     
     System.out.println(result.get());
     
@@ -62,11 +60,11 @@ public class HelloTest extends TestSpec<String, String> {
   
   @Test
   public void testOnError() {
-    TestCase<String, String> test = it.should("check if it fails")
-        .when(error())
-        .thenError(instanceOf(RuntimeException.class));
-
-    TestReport<String> result = suite("some tests suite", test).run();
+    TestReport<String> result = suite("some tests suite", 
+        it.should("check if it fails")
+          .when(error())
+          .thenError(instanceOf(RuntimeException.class))
+      ).run();
     
     System.out.println(result);
     
