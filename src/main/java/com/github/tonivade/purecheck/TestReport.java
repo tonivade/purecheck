@@ -1,9 +1,12 @@
+/*
+ * Copyright (c) 2020, Antonio Gabriel Muñoz Conejo <antoniogmc at gmail dot com>
+ * Distributed under the terms of the MIT License
+ */
 package com.github.tonivade.purecheck;
 
 import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
 
-import com.github.tonivade.purefun.Consumer1;
 import com.github.tonivade.purefun.data.Sequence;
 
 public class TestReport<E> {
@@ -21,7 +24,7 @@ public class TestReport<E> {
     return results.join("\n  - ", "test suite '" + name + "' {\n  - ", "}");
   }
 
-  public void forEach(Consumer1<? super TestResult<E, ?>> consumer) {
-    results.forEach(consumer::accept);
+  public void assertion() {
+    results.forEach(TestResult::assertion);
   }
 }

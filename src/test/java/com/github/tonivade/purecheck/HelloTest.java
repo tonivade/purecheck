@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2020, Antonio Gabriel Muñoz Conejo <antoniogmc at gmail dot com>
+ * Distributed under the terms of the MIT License
+ */
 package com.github.tonivade.purecheck;
 
 import static com.github.tonivade.purecheck.TestSuite.suite;
@@ -38,11 +42,11 @@ public class HelloTest extends TestSpec<String, String> {
 
     TestCase<String, String> test1 = it.should("say hello")
         .when(hello(name))
-        .check(equalsTo("Hello Toni"));
+        .thenCheck(equalsTo("Hello Toni"));
 
     TestCase<String, String> test2 = it.should("don't say goodbye")
         .when(hello(name))
-        .check(startsWith("Bye"));
+        .thenCheck(startsWith("Bye"));
 
     TestCase<String, String> test3 = it.should("catch exceptions")
         .when(error())
@@ -53,19 +57,19 @@ public class HelloTest extends TestSpec<String, String> {
     
     System.out.println(result.get());
     
-    assertThrows(AssertionError.class, () -> result.get().forEach(TestResult::assertion));
+    assertThrows(AssertionError.class, result.get()::assertion);
   }
   
   @Test
   public void testOnError() {
     TestCase<String, String> test = it.should("check if it fails")
         .when(error())
-        .error(instanceOf(RuntimeException.class));
+        .thenError(instanceOf(RuntimeException.class));
 
     TestReport<String> result = suite("some tests suite", test).run();
     
     System.out.println(result);
     
-    assertDoesNotThrow(() -> result.forEach(TestResult::assertion));
+    assertDoesNotThrow(result::assertion);
   }
 }

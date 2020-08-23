@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2020, Antonio Gabriel Muñoz Conejo <antoniogmc at gmail dot com>
+ * Distributed under the terms of the MIT License
+ */
 package com.github.tonivade.purecheck;
 
 /**
@@ -9,6 +13,6 @@ package com.github.tonivade.purecheck;
  */
 public class TestSpec<E, T> {
 
-  protected final TestFactory<String, String> it = TestFactory.factory();
+  protected final TestFactory<E, T> it = TestFactory.factory();
   
 }

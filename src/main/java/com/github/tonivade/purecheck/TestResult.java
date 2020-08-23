@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2020, Antonio Gabriel Muñoz Conejo <antoniogmc at gmail dot com>
+ * Distributed under the terms of the MIT License
+ */
 package com.github.tonivade.purecheck;
 
 import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
@@ -28,13 +32,43 @@ import com.github.tonivade.purefun.type.Validation.Result;
 @HigherKind(sealed = true)
 public interface TestResult<E, T> {
 
-  boolean isSuccess();
+  default boolean isSuccess() {
+    return false;
+  }
 
-  boolean isFailure();
+  default boolean isFailure() {
+    return false;
+  }
 
-  boolean isError();
+  default boolean isError() {
+    return false;
+  }
 
   void assertion();
+  
+  static <E, T> TestResult<E, T> success(String name, T value) {
+    return new Success<>(name, Either.right(value));
+  }
+  
+  static <E, T> TestResult<E, T> success(String name, Throwable error) {
+    return new Success<>(name, Either.left(error));
+  }
+  
+  static <E, T> TestResult<E, T> failure(String name, T value, Result<E> result) {
+    return new Failure<>(name, Either.right(value), result);
+  }
+  
+  static <E, T> TestResult<E, T> failure(String name, Throwable error, Result<E> result) {
+    return new Failure<>(name, Either.left(error), result);
+  }
+  
+  static <E, T> TestResult<E, T> error(String name, Throwable error) {
+    return new Error<>(name, Either.right(error));
+  }
+  
+  static <E, T> TestResult<E, T> error(String name, T error) {
+    return new Error<>(name, Either.left(error));
+  }
 
   final class Success<E, T> implements SealedTestResult<E, T>, Serializable {
 
@@ -54,24 +88,17 @@ public interface TestResult<E, T> {
      * @param name name of the test, non empty value
      * @param value result of the oeration under test
      */
-    protected Success(String name, Either<Throwable, T> value) {
+    private Success(String name, Either<Throwable, T> value) {
       this.name = checkNonEmpty(name);
       this.value = checkNonNull(value);
     }
 
+    @Override
     public boolean isSuccess() {
       return true;
     }
 
-    public boolean isFailure() {
-      return false;
-    }
-    
     @Override
-    public boolean isError() {
-      return false;
-    }
-
     public void assertion() {
       // nothing to do
     }
@@ -114,25 +141,18 @@ public interface TestResult<E, T> {
      * @param value result of the oeration under test
      * @param result result of the validation applied to the value
      */
-    protected Failure(String name, Either<Throwable, T> value, Result<E> result) {
+    private Failure(String name, Either<Throwable, T> value, Result<E> result) {
       this.name = checkNonEmpty(name);
       this.value = checkNonNull(value);
       this.result = checkNonNull(result);
     }
 
-    public boolean isSuccess() {
-      return false;
-    }
-
+    @Override
     public boolean isFailure() {
       return true;
     }
-    
-    @Override
-    public boolean isError() {
-      return false;
-    }
 
+    @Override
     public void assertion() {
       throw new AssertionError(toString());
     }
@@ -163,7 +183,7 @@ public interface TestResult<E, T> {
         .comparing(x -> x.error);
 
     private final String name;
-    private final Either<Throwable, T> error;
+    private final Either<T, Throwable> error;
 
     /**
      * it will throw a {@code NullPointerException} if any of the params are null
@@ -172,17 +192,9 @@ public interface TestResult<E, T> {
      * @param name name of the test, non empty value
      * @param error error captured by the test
      */
-    protected Error(String name, Either<Throwable, T> error) {
+    private Error(String name, Either<T, Throwable> error) {
       this.name = checkNonEmpty(name);
       this.error = checkNonNull(error);
-    }
-
-    public boolean isSuccess() {
-      return false;
-    }
-
-    public boolean isFailure() {
-      return false;
     }
     
     @Override
@@ -190,10 +202,11 @@ public interface TestResult<E, T> {
       return true;
     }
 
+    @Override
     public void assertion() {
       error.fold(
-          throwable -> sneakyThrow(throwable), 
-          value -> new AssertionError());
+          value -> new AssertionError(value), 
+          throwable -> sneakyThrow(throwable));
     }
 
     @Override
@@ -209,7 +222,7 @@ public interface TestResult<E, T> {
     @Override
     public String toString() {
       return String.format("test '%s' ERROR: %s", 
-          name, error.fold(Error::full, Object::toString));
+          name, error.fold(Object::toString, Error::full));
     }
 
     private static String full(Throwable error) {

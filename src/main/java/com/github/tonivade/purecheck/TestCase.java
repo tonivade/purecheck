@@ -1,5 +1,12 @@
+/*
+ * Copyright (c) 2020, Antonio Gabriel Muñoz Conejo <antoniogmc at gmail dot com>
+ * Distributed under the terms of the MIT License
+ */
 package com.github.tonivade.purecheck;
 
+import static com.github.tonivade.purecheck.TestResult.error;
+import static com.github.tonivade.purecheck.TestResult.failure;
+import static com.github.tonivade.purecheck.TestResult.success;
 import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
 
@@ -61,14 +68,12 @@ public class TestCase<E, T> {
     return then.fold(
         onError -> result.fold(
             error -> onError.validate(error).fold(
-                r -> new TestResult.Failure<>(name, Either.<Throwable, T>left(error), r), 
-                t -> new TestResult.Success<>(name, Either.<Throwable, T>left(error))), 
-            value -> new TestResult.Error<>(name, Either.<Throwable, T>right(value))), 
+                r -> failure(name, error, r), t -> success(name, error)), 
+            value -> error(name, value)), 
         onSuccess -> result.fold(
-            error -> new TestResult.Error<>(name, Either.<Throwable, T>left(error)),
+            error -> error(name, error),
             value -> onSuccess.validate(value).fold(
-                r -> new TestResult.Failure<>(name, Either.<Throwable, T>right(value), r),
-                t -> new TestResult.Success<>(name, Either.<Throwable, T>right(value)))));
+                r -> failure(name, value, r), t -> success(name, value))));
   }
   
   /**
@@ -124,11 +129,11 @@ public class TestCase<E, T> {
       return then(Either.left(validator));
     }
     
-    default TestCase<E, T> check(Validator<E, T> validator) {
+    default TestCase<E, T> thenCheck(Validator<E, T> validator) {
       return onSuccess(validator.mapError(error -> Result.of(error)));
     }
     
-    default TestCase<E, T> error(Validator<E, Throwable> validator) {
+    default TestCase<E, T> thenError(Validator<E, Throwable> validator) {
       return onFailure(validator.mapError(error -> Result.of(error)));
     }
   }
