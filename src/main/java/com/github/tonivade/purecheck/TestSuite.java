@@ -1,11 +1,13 @@
 package com.github.tonivade.purecheck;
 
+import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
 import static com.github.tonivade.purefun.concurrent.Par.traverse;
 
 import java.util.concurrent.Executor;
 
 import com.github.tonivade.purefun.concurrent.Par;
+import com.github.tonivade.purefun.concurrent.Promise;
 import com.github.tonivade.purefun.data.NonEmptyList;
 import com.github.tonivade.purefun.data.Sequence;
 
@@ -20,6 +22,7 @@ import com.github.tonivade.purefun.data.Sequence;
  */
 public class TestSuite<E> {
 
+  private final String name;
   private final NonEmptyList<TestCase<E, ?>> tests;
   
   /**
@@ -27,12 +30,15 @@ public class TestSuite<E> {
    * 
    * @param tests list of tests
    */
-  private TestSuite(NonEmptyList<TestCase<E, ?>> tests) {
+  private TestSuite(String name, NonEmptyList<TestCase<E, ?>> tests) {
+    this.name = checkNonEmpty(name);
     this.tests = checkNonNull(tests);
   }
   
   public TestSuite<E> addAll(TestSuite<E> other) {
-    return new TestSuite<>(tests.appendAll(other.tests));
+    return new TestSuite<>(
+        this.name + " and " + other.name, 
+        this.tests.appendAll(other.tests));
   }
   
   /**
@@ -41,16 +47,16 @@ public class TestSuite<E> {
    * @return the result of the suite
    */
   public TestReport<E> run() {
-    return new TestReport<>(tests.map(TestCase::unsafeRun));
+    return new TestReport<>(name, tests.map(TestCase::unsafeRun));
   }
 
   /**
    * It runs the suite in parallel using the given {@code Executor}
    * 
-   * @param executor
-   * @return the result of the suite
+   * @param executor executor on which the suite is going to be executed
+   * @return a promise with the result of the suite
    */
-  public TestReport<E> parRun(Executor executor) {
+  public Promise<TestReport<E>> parRun(Executor executor) {
     /*
      * I think that a will never undestand java generics:
      * 
@@ -71,12 +77,11 @@ public class TestSuite<E> {
      */
     Sequence<Par<TestResult<E, ?>>> map = Sequence.class.cast(tests.map(TestCase::asyncRun));
     
-    return new TestReport<>(traverse(map).run(executor).get().getOrElseThrow(RuntimeException::new));
+    return traverse(map).run(executor).map(results -> new TestReport<>(name, results));
   }
   
-  @SuppressWarnings("unchecked")
   @SafeVarargs
-  public static <E> TestSuite<E> suite(TestCase<E, ?> test, TestCase<E, ?>... tests) {
-    return new TestSuite<>(NonEmptyList.class.cast(NonEmptyList.of(test, tests)));
+  public static <E> TestSuite<E> suite(String name, TestCase<E, ?> test, TestCase<E, ?>... tests) {
+    return new TestSuite<>(name, NonEmptyList.of(test, tests));
   }
 }

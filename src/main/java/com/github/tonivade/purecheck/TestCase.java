@@ -3,6 +3,7 @@ package com.github.tonivade.purecheck;
 import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
 
+import com.github.tonivade.purefun.Producer;
 import com.github.tonivade.purefun.Validator;
 import com.github.tonivade.purefun.concurrent.Par;
 import com.github.tonivade.purefun.monad.IO;
@@ -90,12 +91,11 @@ public class TestCase<E, T> {
    */
   public interface WhenStep<E, T> {
 
-    /**
-     * 
-     * @param operation
-     * @return
-     */
     ThenStep<E, T> when(IO<T> operation);
+
+    default ThenStep<E, T> when(Producer<T> operation) {
+      return when(IO.task(operation));
+    }
   }
   
   /**
@@ -106,11 +106,10 @@ public class TestCase<E, T> {
    */
   public interface ThenStep<E, T> {
     
-    /**
-     * 
-     * @param validator
-     * @return
-     */
     TestCase<E, T> then(Validator<Result<E>, T> validator);
+
+    default TestCase<E, T> check(Validator<E, T> validator) {
+      return then(validator.mapError(error -> Result.of(error)));
+    }
   }
 }

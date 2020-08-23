@@ -165,8 +165,7 @@ public interface TestResult<E, T> {
      * and {@code IllegalArgumentException} if name is a empty String.
      * 
      * @param name name of the test, non empty value
-     * @param value result of the oeration under test
-     * @param result result of the validation applied to the value
+     * @param error error captured by the test
      */
     protected Error(String name, Throwable error) {
       this.name = checkNonEmpty(name);
