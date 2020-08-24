@@ -13,10 +13,14 @@ import static java.lang.Thread.currentThread;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.Test;
 
 import com.github.tonivade.purefun.Unit;
+import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.monad.IO;
+import com.github.tonivade.purefun.type.Try;
 
 public class HelloTest extends TestSpec<String> {
 
@@ -24,7 +28,7 @@ public class HelloTest extends TestSpec<String> {
   public void testHello() {
     String name = "Toni";
 
-    TestReport<String> result =
+    Try<TestReport<String>> result =
         suite("some tests suite",
 
             it.<String>should("say hello")
@@ -39,11 +43,11 @@ public class HelloTest extends TestSpec<String> {
               .when(error())
               .onSuccess(startsWith("Bye").combine(endsWith(name)))
 
-          ).run();
+          ).parRun(Future.DEFAULT_EXECUTOR).get();
     
-    System.out.println(result);
+    System.out.println(result.get());
     
-    assertThrows(AssertionError.class, result::assertion);
+    assertThrows(AssertionError.class, result.get()::assertion);
   }
   
   @Test
@@ -60,16 +64,18 @@ public class HelloTest extends TestSpec<String> {
   }
 
   private static IO<String> hello(String name) {
-    return printThreadName()
+    return printThreadName().andThen(IO.sleep(Duration.ofSeconds(1)))
             .andThen(IO.task(() -> "Hello " + name));
   }
 
   private static IO<String> error() {
-    return printThreadName()
+    return printThreadName().andThen(IO.sleep(Duration.ofSeconds(1)))
             .andThen(IO.raiseError(new RuntimeException()));
   }
 
   private static IO<Unit> printThreadName() {
-    return IO.exec(() -> System.out.println(currentThread().getName()));
+    return IO.exec(() -> {
+      System.out.println(currentThread().getName());
+    });
   }
 }

@@ -83,14 +83,16 @@ public class TestCase<E, T> {
 
   private TestResult<E, T> fold(Try<T> result) {
     return then.fold(
-            onError -> result.fold(
-                    error -> onError.validate(error).fold(
-                            r -> failure(name, error, r), t -> success(name, error)),
-                    value -> error(name, value)),
-            onSuccess -> result.fold(
-                    error -> error(name, error),
-                    value -> onSuccess.validate(value).fold(
-                            r -> failure(name, value, r), t -> success(name, value))));
+
+        onFailure -> result.fold(
+            error -> onFailure.validate(error).fold(
+                r -> failure(name, error, r), t -> success(name, error)),
+            value -> error(name, value)),
+
+        onSuccess -> result.fold(
+            error -> error(name, error),
+            value -> onSuccess.validate(value).fold(
+                r -> failure(name, value, r), t -> success(name, value))));
   }
 
   /**
