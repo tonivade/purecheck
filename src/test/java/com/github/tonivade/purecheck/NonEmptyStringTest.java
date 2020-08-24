@@ -9,60 +9,67 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.github.tonivade.purefun.Producer;
+import com.github.tonivade.purefun.concurrent.Future;
+import com.github.tonivade.purefun.data.NonEmptyString;
+import com.github.tonivade.purefun.type.Try;
 import org.junit.jupiter.api.Test;
 
-import com.github.tonivade.purefun.data.NonEmptyString;
-
-public class NonEmptyStringTest extends TestSpec<String, NonEmptyString> {
+public class NonEmptyStringTest extends TestSpec<String> {
 
   @Test
   public void test() {
     NonEmptyString nonEmptyString = NonEmptyString.of("hola mundo");
 
     assertAll(
-        () -> assertThrows(IllegalArgumentException.class, () -> NonEmptyString.of(null)),
-        () -> assertThrows(IllegalArgumentException.class, () -> NonEmptyString.of("")),
-        () -> assertDoesNotThrow(() -> NonEmptyString.of("hola mundo")),
-        () -> assertEquals("hola mundo", nonEmptyString.get()),
-        () -> assertEquals("HOLA MUNDO", nonEmptyString.transform(String::toUpperCase)),
-        () -> assertEquals(NonEmptyString.of("HOLA MUNDO"), nonEmptyString.map(String::toUpperCase)),
-        () -> assertEquals(NonEmptyString.of("hola mundo"), NonEmptyString.of("hola mundo"))
+        () -> assertThrows(IllegalArgumentException.class, () -> NonEmptyString.of(null)),            // x
+        () -> assertThrows(IllegalArgumentException.class, () -> NonEmptyString.of("")),              // x
+        () -> assertDoesNotThrow(() -> NonEmptyString.of("hola mundo")),                              // ?
+        () -> assertEquals("hola mundo", nonEmptyString.get()),                               // x
+        () -> assertEquals("HOLA MUNDO", nonEmptyString.transform(String::toUpperCase)),      // x
+        () -> assertEquals(NonEmptyString.of("HOLA MUNDO"), nonEmptyString.map(String::toUpperCase)), // x
+        () -> assertEquals(NonEmptyString.of("hola mundo"), NonEmptyString.of("hola mundo"))          // x
     );
   }
   
   @Test
   public void other() {
-    
-    TestReport<String> report = suite("NonEmptyString",
+    Try<TestReport<String>> report = suite("NonEmptyString",
 
-        it.should("not accept null")
-          .when(() -> NonEmptyString.of(null))
+        it.<NonEmptyString>should("not accept null")
+          .when(sayHello(null))
           .thenError(instanceOf(IllegalArgumentException.class)),
 
-        it.should("not accept empty string")
-          .when(() -> NonEmptyString.of(""))
+        it.<NonEmptyString>should("not accept empty string")
+          .when(sayHello(""))
           .thenError(instanceOf(IllegalArgumentException.class)),
 
-        it.should("contains a non empty string")
-          .when(() -> NonEmptyString.of("hola mundo"))
+        it.<NonEmptyString>should("contains a non empty string")
+          .when(sayHello("hola mundo"))
           .thenCheck(equalsTo("hola mundo").compose(NonEmptyString::get)),
-          
-        it.should("map inner value with a function")
-          .when(() -> NonEmptyString.of("hola mundo").map(String::toUpperCase))
+
+        it.<NonEmptyString>should("map inner value")
+          .when(sayHello("hola mundo").map(string -> string.map(String::toUpperCase)))
           .thenCheck(equalsTo("HOLA MUNDO").compose(NonEmptyString::get)),
-          
-        it.should("be equals to `hola mundo`")
-          .when(() -> NonEmptyString.of("hola mundo"))
+
+        it.<String>should("transform inner value")
+          .when(sayHello("hola mundo").map(string -> string.transform(String::toUpperCase)))
+          .thenCheck(equalsTo("HOLA MUNDO")),
+
+        it.<NonEmptyString>should("be equals to `hola mundo`")
+          .when(sayHello("hola mundo"))
           .thenCheck(equalsTo(NonEmptyString.of("hola mundo"))),
-          
-        it.should("be not equals to `HOLA MUNDO`")
-          .when(() -> NonEmptyString.of("hola mundo"))
+
+        it.<NonEmptyString>should("be not equals to `HOLA MUNDO`")
+          .when(sayHello("hola mundo"))
           .thenCheck(notEqualsTo(NonEmptyString.of("HOLA MUNDO")))
 
-        ).run();
+        ).parRun(Future.DEFAULT_EXECUTOR).get();
     
-    System.out.println(report);
-    
-    report.assertion();
+    report.onSuccess(System.out::println).onSuccess(TestReport::assertion);
+  }
+
+  private Producer<NonEmptyString> sayHello(String s) {
+    return () -> NonEmptyString.of(s);
   }
 }

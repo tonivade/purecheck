@@ -6,14 +6,14 @@ package com.github.tonivade.purecheck;
 
 import com.github.tonivade.purecheck.TestCase.WhenStep;
 
-public interface TestFactory<E, T> {
+public interface TestFactory<E> {
   
   @SuppressWarnings("unchecked")
-  static <E, T> TestFactory<E, T> factory() {
-    return (TestFactory<E, T>) TestFactoryModule.INSTANCE;
+  static <E> TestFactory<E> factory() {
+    return (TestFactory<E>) TestFactoryModule.INSTANCE;
   }
 
-  default WhenStep<E, T> should(String name) {
+  default <T> WhenStep<E, T> should(String name) {
     return TestCase.test(name);
   }
 }
@@ -21,6 +21,6 @@ public interface TestFactory<E, T> {
 interface TestFactoryModule {
 
   @SuppressWarnings("rawtypes")
-  TestFactory<?, ?> INSTANCE = new TestFactory() { };
+  TestFactory<?> INSTANCE = new TestFactory() { };
   
 }

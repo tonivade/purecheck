@@ -12,7 +12,6 @@ import static com.github.tonivade.purefun.Precondition.checkNonNull;
 
 import com.github.tonivade.purefun.Producer;
 import com.github.tonivade.purefun.Validator;
-import com.github.tonivade.purefun.concurrent.Par;
 import com.github.tonivade.purefun.monad.IO;
 import com.github.tonivade.purefun.type.Either;
 import com.github.tonivade.purefun.type.Try;
@@ -56,35 +55,32 @@ public class TestCase<E, T> {
     this.when = checkNonNull(when);
     this.then = checkNonNull(then);
   }
+
+  public IO<TestResult<E, T>> runIO() {
+    return when.attempt().map(this::fold);
+  }
   
   /**
    * It runs the operation and applies the validation
    * 
    * @return the validation result
    */
-  public TestResult<E, T> unsafeRun() {
-    Try<T> result = when.safeRunSync();
-    
+  public TestResult<E, T> run() {
+    return runIO().unsafeRunSync();
+  }
+
+  private TestResult<E, T> fold(Try<T> result) {
     return then.fold(
-        onError -> result.fold(
-            error -> onError.validate(error).fold(
-                r -> failure(name, error, r), t -> success(name, error)), 
-            value -> error(name, value)), 
-        onSuccess -> result.fold(
-            error -> error(name, error),
-            value -> onSuccess.validate(value).fold(
-                r -> failure(name, value, r), t -> success(name, value))));
+            onError -> result.fold(
+                    error -> onError.validate(error).fold(
+                            r -> failure(name, error, r), t -> success(name, error)),
+                    value -> error(name, value)),
+            onSuccess -> result.fold(
+                    error -> error(name, error),
+                    value -> onSuccess.validate(value).fold(
+                            r -> failure(name, value, r), t -> success(name, value))));
   }
-  
-  /**
-   * It returns a Par to run the test in another thread
-   * 
-   * @return the validation result
-   */
-  public Par<TestResult<E, T>> asyncRun() {
-    return Par.task(this::unsafeRun);
-  }
-  
+
   /**
    * It returns a builder like to create a new test case
    * @param <E> type of the result returned by the operation
@@ -130,11 +126,11 @@ public class TestCase<E, T> {
     }
     
     default TestCase<E, T> thenCheck(Validator<E, T> validator) {
-      return onSuccess(validator.mapError(error -> Result.of(error)));
+      return onSuccess(validator.mapError(Result::of));
     }
     
     default TestCase<E, T> thenError(Validator<E, Throwable> validator) {
-      return onFailure(validator.mapError(error -> Result.of(error)));
+      return onFailure(validator.mapError(Result::of));
     }
   }
 }
