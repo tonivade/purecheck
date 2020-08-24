@@ -12,6 +12,9 @@ import static com.github.tonivade.purefun.Precondition.checkNonNull;
 
 import com.github.tonivade.purefun.Producer;
 import com.github.tonivade.purefun.Validator;
+import com.github.tonivade.purefun.concurrent.Par;
+import com.github.tonivade.purefun.concurrent.ParOf;
+import com.github.tonivade.purefun.instances.ParInstances;
 import com.github.tonivade.purefun.monad.IO;
 import com.github.tonivade.purefun.type.Either;
 import com.github.tonivade.purefun.type.Try;
@@ -67,6 +70,15 @@ public class TestCase<E, T> {
    */
   public TestResult<E, T> run() {
     return runIO().unsafeRunSync();
+  }
+
+  /**
+   * It returns a Par to run the test in parallel
+   *
+   * @return the validation result
+   */
+  public Par<TestResult<E, T>> parRun() {
+    return runIO().foldMap(ParInstances.monadDefer()).fix(ParOf::narrowK);
   }
 
   private TestResult<E, T> fold(Try<T> result) {
