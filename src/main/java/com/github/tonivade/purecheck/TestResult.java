@@ -31,7 +31,7 @@ import com.github.tonivade.purefun.type.Validation.Result;
  * @param <T> type of the value
  */
 @HigherKind(sealed = true)
-public interface TestResult<E, T> {
+public interface TestResult<E, T> extends TestResultOf<E, T> {
 
   default boolean isSuccess() {
     return false;
