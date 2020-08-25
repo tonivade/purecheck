@@ -70,8 +70,8 @@ public class TestCase<E, T> {
     return test;
   }
 
-  public TestCase<E, T> disable() {
-    return new TestCase<>(name, IO.pure(disabled(name)));
+  public TestCase<E, T> disable(String reason) {
+    return new TestCase<>(name, IO.pure(disabled(name, reason)));
   }
 
   public TestCase<E, Tuple2<Duration, T>> timed() {

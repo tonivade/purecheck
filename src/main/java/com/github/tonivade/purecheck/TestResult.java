@@ -77,8 +77,8 @@ public interface TestResult<E, T> {
     return new Error<>(name, Either.left(error));
   }
 
-  static <E, T> TestResult<E, T> disabled(String name) {
-    return new Disabled<>(name);
+  static <E, T> TestResult<E, T> disabled(String name, String reason) {
+    return new Disabled<>(name, reason);
   }
 
   final class Success<E, T> implements SealedTestResult<E, T>, Serializable {
@@ -263,19 +263,25 @@ public interface TestResult<E, T> {
 
   final class Disabled<E, T> implements SealedTestResult<E, T>, Serializable {
 
+    private static final long serialVersionUID = -8661817362831938094L;
+
     private static final Equal<Disabled<?, ?>> EQUAL = Equal.<Disabled<?, ?>>of()
-        .comparing(x -> x.name);
+        .comparing(x -> x.name)
+        .comparing(x -> x.reason);
 
     private final String name;
+    private final String reason;
 
     /**
      * it will throw a {@code NullPointerException} if any of the params are null
      * and {@code IllegalArgumentException} if name is a empty String.
      *
      * @param name name of the test, non empty value
+     * @param reason description
      */
-    private Disabled(String name) {
+    private Disabled(String name, String reason) {
       this.name = checkNonEmpty(name);
+      this.reason = checkNonEmpty(reason);
     }
 
     @Override
@@ -290,7 +296,7 @@ public interface TestResult<E, T> {
 
     @Override
     public <R> TestResult<E, R> map(Function1<T, R> mapper) {
-      return new Disabled<>(name);
+      return new Disabled<>(name, reason);
     }
 
     @Override
@@ -300,12 +306,12 @@ public interface TestResult<E, T> {
 
     @Override
     public int hashCode() {
-      return Objects.hash(name);
+      return Objects.hash(name, reason);
     }
 
     @Override
     public String toString() {
-      return String.format("test '%s' DISABLED", name);
+      return String.format("test '%s' DISABLED: %s", name, reason);
     }
   }
 }

@@ -41,7 +41,12 @@ public class HelloTest extends TestSpec<String> {
 
             it.<String>should("catch exceptions")
               .when(error())
+              .onSuccess(startsWith("Bye").combine(endsWith(name))),
+
+            it.<String>should("disabled test")
+              .when(error())
               .onSuccess(startsWith("Bye").combine(endsWith(name)))
+              .disable("not working")
 
           ).parRun(Future.DEFAULT_EXECUTOR).get();
     
