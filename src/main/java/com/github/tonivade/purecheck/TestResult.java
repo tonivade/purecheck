@@ -16,6 +16,7 @@ import java.io.UncheckedIOException;
 import java.util.Objects;
 
 import com.github.tonivade.purefun.Equal;
+import com.github.tonivade.purefun.Function1;
 import com.github.tonivade.purefun.HigherKind;
 import com.github.tonivade.purefun.Recoverable;
 import com.github.tonivade.purefun.type.Either;
@@ -44,7 +45,13 @@ public interface TestResult<E, T> {
     return false;
   }
 
+  default boolean isDisabled() {
+    return false;
+  }
+
   void assertion();
+
+  <R> TestResult<E, R> map(Function1<T, R> mapper);
   
   static <E, T> TestResult<E, T> success(String name, T value) {
     return new Success<>(name, Either.right(value));
@@ -68,6 +75,10 @@ public interface TestResult<E, T> {
   
   static <E, T> TestResult<E, T> error(String name, T error) {
     return new Error<>(name, Either.left(error));
+  }
+
+  static <E, T> TestResult<E, T> disabled(String name) {
+    return new Disabled<>(name);
   }
 
   final class Success<E, T> implements SealedTestResult<E, T>, Serializable {
@@ -101,6 +112,11 @@ public interface TestResult<E, T> {
     @Override
     public void assertion() {
       // nothing to do
+    }
+
+    @Override
+    public <R> TestResult<E, R> map(Function1<T, R> mapper) {
+      return new Success<>(name, value.map(mapper::apply));
     }
 
     @Override
@@ -158,6 +174,11 @@ public interface TestResult<E, T> {
     }
 
     @Override
+    public <R> TestResult<E, R> map(Function1<T, R> mapper) {
+      return new Failure<>(name, value.map(mapper::apply), result);
+    }
+
+    @Override
     public boolean equals(Object obj) {
       return EQUAL.applyTo(this, obj);
     }
@@ -208,6 +229,11 @@ public interface TestResult<E, T> {
     }
 
     @Override
+    public <R> TestResult<E, R> map(Function1<T, R> mapper) {
+      return new Error<>(name, error.mapLeft(mapper::apply));
+    }
+
+    @Override
     public boolean equals(Object obj) {
       return EQUAL.applyTo(this, obj);
     }
@@ -232,6 +258,54 @@ public interface TestResult<E, T> {
         throw new UncheckedIOException(e);
       }
       return message.toString();
+    }
+  }
+
+  final class Disabled<E, T> implements SealedTestResult<E, T>, Serializable {
+
+    private static final Equal<Disabled<?, ?>> EQUAL = Equal.<Disabled<?, ?>>of()
+        .comparing(x -> x.name);
+
+    private final String name;
+
+    /**
+     * it will throw a {@code NullPointerException} if any of the params are null
+     * and {@code IllegalArgumentException} if name is a empty String.
+     *
+     * @param name name of the test, non empty value
+     */
+    private Disabled(String name) {
+      this.name = checkNonEmpty(name);
+    }
+
+    @Override
+    public boolean isDisabled() {
+      return true;
+    }
+
+    @Override
+    public void assertion() {
+      // nothing to do
+    }
+
+    @Override
+    public <R> TestResult<E, R> map(Function1<T, R> mapper) {
+      return new Disabled<>(name);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      return EQUAL.applyTo(this, obj);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(name);
+    }
+
+    @Override
+    public String toString() {
+      return String.format("test '%s' DISABLED", name);
     }
   }
 }
