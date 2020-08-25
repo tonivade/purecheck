@@ -12,7 +12,6 @@ import java.util.concurrent.Executor;
 import com.github.tonivade.purefun.concurrent.ParOf;
 import com.github.tonivade.purefun.concurrent.Promise;
 import com.github.tonivade.purefun.data.NonEmptyList;
-import com.github.tonivade.purefun.data.Sequence;
 import com.github.tonivade.purefun.instances.ParInstances;
 import com.github.tonivade.purefun.monad.IO;
 
