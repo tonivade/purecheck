@@ -74,8 +74,6 @@ public class HelloTest extends TestSpec<String> {
   }
 
   private static IO<Unit> printThreadName() {
-    return IO.exec(() -> {
-      System.out.println(currentThread().getName());
-    });
+    return IO.exec(() -> System.out.println(currentThread().getName()));
   }
 }

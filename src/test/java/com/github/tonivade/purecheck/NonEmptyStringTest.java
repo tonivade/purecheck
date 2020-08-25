@@ -22,13 +22,13 @@ public class NonEmptyStringTest extends TestSpec<String> {
     NonEmptyString nonEmptyString = NonEmptyString.of("hola mundo");
 
     assertAll(
-        () -> assertThrows(IllegalArgumentException.class, () -> NonEmptyString.of(null)),            // x
-        () -> assertThrows(IllegalArgumentException.class, () -> NonEmptyString.of("")),              // x
-        () -> assertDoesNotThrow(() -> NonEmptyString.of("hola mundo")),                              // ?
-        () -> assertEquals("hola mundo", nonEmptyString.get()),                               // x
-        () -> assertEquals("HOLA MUNDO", nonEmptyString.transform(String::toUpperCase)),      // x
-        () -> assertEquals(NonEmptyString.of("HOLA MUNDO"), nonEmptyString.map(String::toUpperCase)), // x
-        () -> assertEquals(NonEmptyString.of("hola mundo"), NonEmptyString.of("hola mundo"))          // x
+        () -> assertThrows(IllegalArgumentException.class, () -> NonEmptyString.of(null)),
+        () -> assertThrows(IllegalArgumentException.class, () -> NonEmptyString.of("")),
+        () -> assertDoesNotThrow(() -> NonEmptyString.of("hola mundo")),
+        () -> assertEquals("hola mundo", nonEmptyString.get()),
+        () -> assertEquals("HOLA MUNDO", nonEmptyString.transform(String::toUpperCase)),
+        () -> assertEquals(NonEmptyString.of("HOLA MUNDO"), nonEmptyString.map(String::toUpperCase)),
+        () -> assertEquals(NonEmptyString.of("hola mundo"), NonEmptyString.of("hola mundo"))
     );
   }
   

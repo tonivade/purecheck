@@ -86,7 +86,7 @@ public interface TestResult<E, T> {
      * and {@code IllegalArgumentException} if name is a empty String.
      * 
      * @param name name of the test, non empty value
-     * @param value result of the oeration under test
+     * @param value result of the operation under test
      */
     private Success(String name, Either<Throwable, T> value) {
       this.name = checkNonEmpty(name);
@@ -138,7 +138,7 @@ public interface TestResult<E, T> {
      * and {@code IllegalArgumentException} if name is a empty String.
      * 
      * @param name name of the test, non empty value
-     * @param value result of the oeration under test
+     * @param value result of the operation under test
      * @param result result of the validation applied to the value
      */
     private Failure(String name, Either<Throwable, T> value, Result<E> result) {
@@ -204,9 +204,7 @@ public interface TestResult<E, T> {
 
     @Override
     public void assertion() {
-      error.fold(
-          value -> new AssertionError(value), 
-          throwable -> sneakyThrow(throwable));
+      error.fold(AssertionError::new, this::sneakyThrow);
     }
 
     @Override
@@ -227,9 +225,9 @@ public interface TestResult<E, T> {
 
     private static String full(Throwable error) {
       StringBuilder message = new StringBuilder(String.valueOf(error.getMessage())).append('\n');
-      try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-        error.printStackTrace(new PrintStream(baos));
-        message.append(new String(baos.toByteArray(), UTF_8));
+      try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+        error.printStackTrace(new PrintStream(output));
+        message.append(new String(output.toByteArray(), UTF_8));
       } catch (IOException e) {
         throw new UncheckedIOException(e);
       }

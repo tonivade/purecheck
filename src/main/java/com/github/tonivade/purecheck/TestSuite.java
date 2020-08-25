@@ -49,9 +49,7 @@ public class TestSuite<E> {
   public IO<TestReport<E>> runIO() {
     NonEmptyList<IO<TestResult<E, ?>>> map = (NonEmptyList) tests.map(TestCase::runIO);
 
-    IO<Sequence<TestResult<E, ?>>> traverse = IO.traverse(map);
-
-    return traverse.map(xs -> new TestReport<>(name, xs));
+    return IO.traverse(map).map(xs -> new TestReport<>(name, xs));
   }
 
   /**
@@ -60,9 +58,7 @@ public class TestSuite<E> {
    * @return the result of the suite
    */
   public TestReport<E> run() {
-    NonEmptyList<TestResult<E, ?>> map = tests.map(TestCase::run);
-
-    return new TestReport<>(name, map);
+    return runIO().unsafeRunSync();
   }
 
   /**
