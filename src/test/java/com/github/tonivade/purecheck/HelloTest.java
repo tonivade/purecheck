@@ -12,16 +12,23 @@ import static com.github.tonivade.purefun.Validator.startsWith;
 import static java.lang.Thread.currentThread;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.github.tonivade.purefun.Unit;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.monad.IO;
 import com.github.tonivade.purefun.type.Try;
 
+@ExtendWith(MockitoExtension.class)
 public class HelloTest extends TestSpec<String> {
 
   @Test
@@ -66,6 +73,54 @@ public class HelloTest extends TestSpec<String> {
     System.out.println(result);
     
     assertDoesNotThrow(result::assertion);
+  }
+  
+  @Test
+  public void repeat(@Mock IO<String> task) {
+    when(task.attempt()).thenCallRealMethod();
+    when(task.unsafeRunSync()).thenReturn("Hello Toni");
+    
+    TestReport<String> result =
+        suite("some tests suite",
+            it.<String>should("reapeat")
+              .when(task)
+              .thenCheck(equalsTo("Hello Toni")).repeat(3)
+            ).run();
+    
+    verify(task, times(4)).unsafeRunSync();
+    
+    System.out.println(result);
+  }
+  
+  @Test
+  public void retry(@Mock IO<String> task) {
+    when(task.attempt()).thenCallRealMethod();
+    when(task.unsafeRunSync())
+      .thenThrow(RuntimeException.class)
+      .thenReturn("Hello Toni");
+    
+    TestReport<String> result =
+        suite("some tests suite",
+            it.<String>should("retry")
+              .when(task)
+              .thenCheck(equalsTo("Hello Toni")).retryOnError(3)
+            ).run();
+    
+    verify(task, times(2)).unsafeRunSync();
+    
+    System.out.println(result);
+  }
+  
+  @Test
+  public void timed() {
+    TestReport<String> result =
+        suite("some tests suite",
+            it.<String>should("timed")
+              .when(() -> "Hello Toni")
+              .thenCheck(equalsTo("Hello Toni")).timed()
+            ).run();
+
+    System.out.println(result);
   }
 
   private static IO<String> hello(String name) {
