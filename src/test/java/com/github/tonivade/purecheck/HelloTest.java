@@ -93,7 +93,7 @@ public class HelloTest extends TestSpec<String> {
   }
   
   @Test
-  public void retry(@Mock IO<String> task) {
+  public void retryOnError(@Mock IO<String> task) {
     when(task.attempt()).thenCallRealMethod();
     when(task.unsafeRunSync())
       .thenThrow(RuntimeException.class)
@@ -101,9 +101,28 @@ public class HelloTest extends TestSpec<String> {
     
     TestReport<String> result =
         suite("some tests suite",
-            it.<String>should("retry")
+            it.<String>should("retry on error")
               .when(task)
               .thenCheck(equalsTo("Hello Toni")).retryOnError(3)
+            ).run();
+    
+    verify(task, times(2)).unsafeRunSync();
+    
+    System.out.println(result);
+  }
+  
+  @Test
+  public void retryOnFailure(@Mock IO<String> task) {
+    when(task.attempt()).thenCallRealMethod();
+    when(task.unsafeRunSync())
+      .thenReturn("Hello World")
+      .thenReturn("Hello Toni");
+    
+    TestReport<String> result =
+        suite("some tests suite",
+            it.<String>should("retry on failure")
+              .when(task)
+              .thenCheck(equalsTo("Hello Toni")).retryOnFailure(3)
             ).run();
     
     verify(task, times(2)).unsafeRunSync();
