@@ -71,10 +71,10 @@ public class NonEmptyStringTest extends TestSpec<String> {
 
   @Test
   public void parallel() {
-    suite.parRun(Future.DEFAULT_EXECUTOR).get().onSuccess(TestReport::assertion);
+    suite.parRun(Future.DEFAULT_EXECUTOR).await().onSuccess(TestReport::assertion);
   }
 
-  private Producer<NonEmptyString> sayHello(String s) {
+  private static Producer<NonEmptyString> sayHello(String s) {
     return () -> NonEmptyString.of(s);
   }
 }

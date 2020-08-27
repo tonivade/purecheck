@@ -9,8 +9,8 @@ import static com.github.tonivade.purefun.Precondition.checkNonNull;
 
 import java.util.concurrent.Executor;
 
+import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.concurrent.ParOf;
-import com.github.tonivade.purefun.concurrent.Promise;
 import com.github.tonivade.purefun.data.NonEmptyList;
 import com.github.tonivade.purefun.instances.ParInstances;
 import com.github.tonivade.purefun.monad.IO;
@@ -66,8 +66,8 @@ public class TestSuite<E> {
    * @param executor executor on which the suite is going to be executed
    * @return a promise with the result of the suite
    */
-  public Promise<TestReport<E>> parRun(Executor executor) {
-    return runIO().foldMap(ParInstances.monadDefer()).fix(ParOf::narrowK).run(executor);
+  public Future<TestReport<E>> parRun(Executor executor) {
+    return runIO().foldMap(ParInstances.monadDefer()).fix(ParOf::narrowK).apply(executor);
   }
   
   @SafeVarargs

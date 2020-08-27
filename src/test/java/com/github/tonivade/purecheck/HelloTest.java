@@ -55,7 +55,7 @@ public class HelloTest extends TestSpec<String> {
               .onSuccess(startsWith("Bye").combine(endsWith(name)))
               .disable("not working")
 
-          ).parRun(Future.DEFAULT_EXECUTOR).get();
+          ).parRun(Future.DEFAULT_EXECUTOR).await();
     
     System.out.println(result.get());
     
