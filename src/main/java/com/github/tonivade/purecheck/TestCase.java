@@ -143,6 +143,10 @@ public class TestCase<E, T> {
     default ThenStep<E, T> when(T value) {
       return when(IO.pure(value));
     }
+
+    default ThenStep<E, T> when(Throwable error) {
+      return when(IO.<T>raiseError(error));
+    }
   }
   
   /**
