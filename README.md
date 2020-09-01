@@ -47,23 +47,23 @@ TestResult can have 4 different values:
           .thenError(instanceOf(IllegalArgumentException.class)),
 
       it.<NonEmptyString>should("contains a non empty string")
-          .when(NonEmptyString.of("hola mundo"))
+          .given(NonEmptyString.of("hola mundo"))
           .thenCheck(equalsTo("hola mundo").compose(NonEmptyString::get)),
 
       it.<NonEmptyString>should("map inner value")
-          .when(NonEmptyString.of("hola mundo").map(String::toUpperCase))
+          .given(NonEmptyString.of("hola mundo").map(String::toUpperCase))
           .thenCheck(equalsTo("HOLA MUNDO").compose(NonEmptyString::get)),
 
       it.<String>should("transform inner value")
-          .when(NonEmptyString.of("hola mundo").transform(String::toUpperCase))
+          .given(NonEmptyString.of("hola mundo").transform(String::toUpperCase))
           .thenCheck(equalsTo("HOLA MUNDO")),
 
       it.<NonEmptyString>should("be equals to `hola mundo`")
-          .when(NonEmptyString.of("hola mundo"))
+          .given(NonEmptyString.of("hola mundo"))
           .thenCheck(equalsTo(NonEmptyString.of("hola mundo"))),
 
       it.<NonEmptyString>should("be not equals to `HOLA MUNDO`")
-          .when(NonEmptyString.of("hola mundo"))
+          .given(NonEmptyString.of("hola mundo"))
           .thenCheck(notEqualsTo(NonEmptyString.of("HOLA MUNDO")))
   );
  ```

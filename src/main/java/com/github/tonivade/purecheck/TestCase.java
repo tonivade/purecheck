@@ -140,11 +140,11 @@ public class TestCase<E, T> {
       return when(IO.task(operation));
     }
 
-    default ThenStep<E, T> when(T value) {
+    default ThenStep<E, T> given(T value) {
       return when(IO.pure(value));
     }
 
-    default ThenStep<E, T> when(Throwable error) {
+    default ThenStep<E, T> error(Throwable error) {
       return when(IO.<T>raiseError(error));
     }
   }
