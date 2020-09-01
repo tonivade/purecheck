@@ -32,6 +32,6 @@ public class TestReport<E> {
 
   @Override
   public String toString() {
-    return results.join("\n  - ", "test suite '" + name + "' {\n  - ", "\n}");
+    return results.join("\n  - ", name + " {\n  - ", "\n}");
   }
 }

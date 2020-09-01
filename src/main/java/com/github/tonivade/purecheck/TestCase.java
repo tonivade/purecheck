@@ -139,6 +139,10 @@ public class TestCase<E, T> {
     default ThenStep<E, T> when(Producer<T> operation) {
       return when(IO.task(operation));
     }
+
+    default ThenStep<E, T> when(T value) {
+      return when(IO.pure(value));
+    }
   }
   
   /**

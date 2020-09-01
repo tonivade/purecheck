@@ -48,9 +48,9 @@ compileTestJava {
 }
 
 dependencies {
-  annotationProcessor 'com.github.tonivade:purefun-processor:2.1'
-  api 'com.github.tonivade:purefun-monad:2.1'
-  implementation 'com.github.tonivade:purefun-instances:2.1'
+  annotationProcessor 'com.github.tonivade:purefun-processor:2.1.1'
+  api 'com.github.tonivade:purefun-monad:2.1.1'
+  implementation 'com.github.tonivade:purefun-instances:2.1.1'
   testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
   testImplementation 'org.junit.platform:junit-platform-runner:1.6.2'
   testImplementation 'org.mockito:mockito-core:3.5.7'

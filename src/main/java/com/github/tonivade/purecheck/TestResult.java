@@ -131,7 +131,7 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
 
     @Override
     public String toString() {
-      return String.format("test '%s' SUCCESS: '%s'", 
+      return String.format("it should '%s' SUCCESS: '%s'", 
           name, value.fold(Object::toString, Object::toString));
     }
   }

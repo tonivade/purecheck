@@ -13,41 +13,41 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.github.tonivade.purefun.Producer;
+import org.junit.jupiter.api.Test;
+
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyString;
-import org.junit.jupiter.api.Test;
 
 public class NonEmptyStringTest extends TestSpec<String> {
 
   private final TestSuite<String> suite = suite("NonEmptyString",
 
       it.<NonEmptyString>should("not accept null")
-          .when(sayHello(null))
+          .when(() -> NonEmptyString.of(null))
           .thenError(instanceOf(IllegalArgumentException.class)),
 
       it.<NonEmptyString>should("not accept empty string")
-          .when(sayHello(""))
+          .when(() -> NonEmptyString.of(""))
           .thenError(instanceOf(IllegalArgumentException.class)),
 
       it.<NonEmptyString>should("contains a non empty string")
-          .when(sayHello("hola mundo"))
+          .when(NonEmptyString.of("hola mundo"))
           .thenCheck(equalsTo("hola mundo").compose(NonEmptyString::get)),
 
       it.<NonEmptyString>should("map inner value")
-          .when(sayHello("hola mundo").map(string -> string.map(String::toUpperCase)))
+          .when(NonEmptyString.of("hola mundo").map(String::toUpperCase))
           .thenCheck(equalsTo("HOLA MUNDO").compose(NonEmptyString::get)),
 
       it.<String>should("transform inner value")
-          .when(sayHello("hola mundo").map(string -> string.transform(String::toUpperCase)))
+          .when(NonEmptyString.of("hola mundo").transform(String::toUpperCase))
           .thenCheck(equalsTo("HOLA MUNDO")),
 
       it.<NonEmptyString>should("be equals to `hola mundo`")
-          .when(sayHello("hola mundo"))
+          .when(NonEmptyString.of("hola mundo"))
           .thenCheck(equalsTo(NonEmptyString.of("hola mundo"))),
 
       it.<NonEmptyString>should("be not equals to `HOLA MUNDO`")
-          .when(sayHello("hola mundo"))
+          .when(NonEmptyString.of("hola mundo"))
           .thenCheck(notEqualsTo(NonEmptyString.of("HOLA MUNDO")))
   );
 
@@ -66,15 +66,15 @@ public class NonEmptyStringTest extends TestSpec<String> {
 
   @Test
   public void serial() {
-    suite.run().assertion();
+    TestReport<String> run = suite.run();
+
+    run.assertion();
+    
+    System.out.println(run);
   }
 
   @Test
   public void parallel() {
     suite.parRun(Future.DEFAULT_EXECUTOR).await().onSuccess(TestReport::assertion);
-  }
-
-  private static Producer<NonEmptyString> sayHello(String s) {
-    return () -> NonEmptyString.of(s);
   }
 }
