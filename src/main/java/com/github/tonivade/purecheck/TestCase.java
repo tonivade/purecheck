@@ -36,6 +36,8 @@ import com.github.tonivade.purefun.type.Validation.Result;
 @HigherKind(sealed = true)
 public interface TestCase<E, T> extends TestCaseOf<E, T> {
 
+  String name();
+
   IO<TestResult<E, T>> runIO();
 
   TestCase<E, T> disable(String reason);
@@ -170,6 +172,7 @@ class TestCaseImpl<E, T> implements SealedTestCase<E, T> {
     this.test = checkNonNull(test);
   }
 
+  @Override
   public String name() {
     return name;
   }
