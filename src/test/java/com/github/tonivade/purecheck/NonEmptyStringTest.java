@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.github.tonivade.purefun.Function1;
 import org.junit.jupiter.api.Test;
 
 import com.github.tonivade.purefun.concurrent.Future;
@@ -22,32 +23,39 @@ public class NonEmptyStringTest extends TestSpec<String> {
 
   private final TestSuite<String> suite = suite("NonEmptyString",
 
-      it.<NonEmptyString>should("not accept null")
-          .when(() -> NonEmptyString.of(null))
+      it.<String, NonEmptyString>should("not accept null")
+          .given(null)
+          .when(NonEmptyString::of)
           .thenError(instanceOf(IllegalArgumentException.class)),
 
-      it.<NonEmptyString>should("not accept empty string")
-          .when(() -> NonEmptyString.of(""))
+      it.<String, NonEmptyString>should("not accept empty string")
+          .given("")
+          .when(NonEmptyString::of)
           .thenError(instanceOf(IllegalArgumentException.class)),
 
-      it.<NonEmptyString>should("contains a non empty string")
-          .given(NonEmptyString.of("hola mundo"))
+      it.<String, NonEmptyString>should("contains a non empty string")
+          .given("hola mundo")
+          .when(NonEmptyString::of)
           .thenCheck(equalsTo("hola mundo").compose(NonEmptyString::get)),
 
-      it.<NonEmptyString>should("map inner value")
-          .given(NonEmptyString.of("hola mundo").map(String::toUpperCase))
+      it.<NonEmptyString, NonEmptyString>should("map inner value")
+          .given(NonEmptyString.of("hola mundo"))
+          .when(hello -> hello.map(String::toUpperCase))
           .thenCheck(equalsTo("HOLA MUNDO").compose(NonEmptyString::get)),
 
-      it.<String>should("transform inner value")
-          .given(NonEmptyString.of("hola mundo").transform(String::toUpperCase))
+      it.<NonEmptyString, String>should("transform inner value")
+          .given(NonEmptyString.of("hola mundo"))
+          .when(hello -> hello.transform(String::toUpperCase))
           .thenCheck(equalsTo("HOLA MUNDO")),
 
-      it.<NonEmptyString>should("be equals to `hola mundo`")
+      it.<NonEmptyString, NonEmptyString>should("be equals to other string `hola mundo`")
           .given(NonEmptyString.of("hola mundo"))
+          .when(Function1.identity())
           .thenCheck(equalsTo(NonEmptyString.of("hola mundo"))),
 
-      it.<NonEmptyString>should("be not equals to `HOLA MUNDO`")
+      it.<NonEmptyString, NonEmptyString>should("not be equals to other string different to `hola mundo`")
           .given(NonEmptyString.of("hola mundo"))
+          .when(Function1.identity())
           .thenCheck(notEqualsTo(NonEmptyString.of("HOLA MUNDO")))
   );
 

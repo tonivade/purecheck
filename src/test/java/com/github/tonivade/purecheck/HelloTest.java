@@ -5,6 +5,7 @@
 package com.github.tonivade.purecheck;
 
 import static com.github.tonivade.purecheck.TestSuite.suite;
+import static com.github.tonivade.purefun.Function1.identity;
 import static com.github.tonivade.purefun.Validator.endsWith;
 import static com.github.tonivade.purefun.Validator.equalsTo;
 import static com.github.tonivade.purefun.Validator.instanceOf;
@@ -33,26 +34,28 @@ public class HelloTest extends TestSpec<String> {
 
   @Test
   public void testHello() {
-    String name = "Toni";
-
     Try<TestReport<String>> result =
         suite("some tests suite",
 
-            it.<String>should("say hello")
-              .when(hello(name))
+            it.<String, String>should("say hello")
+              .given("Toni")
+              .run(HelloTest::hello)
               .thenCheck(equalsTo("Hello Toni")),
 
-            it.<String>should("don't say goodbye")
-              .when(hello(name))
+            it.<String, String>should("don't say goodbye")
+              .given("Toni")
+              .run(HelloTest::hello)
               .thenCheck(startsWith("Bye")),
 
-            it.<String>should("catch exceptions")
+            it.<String, String>should("catch exceptions")
+              .given("Toni")
               .when(error())
-              .onSuccess(startsWith("Bye").combine(endsWith(name))),
+              .onSuccess(startsWith("Bye").combine(endsWith("Toni"))),
 
-            it.<String>should("disabled test")
+            it.<String, String>should("disabled test")
+              .given("Toni")
               .when(error())
-              .onSuccess(startsWith("Bye").combine(endsWith(name)))
+              .onSuccess(startsWith("Bye").combine(endsWith("Toni")))
               .disable("not working")
 
           ).parRun(Future.DEFAULT_EXECUTOR).await();
@@ -65,7 +68,8 @@ public class HelloTest extends TestSpec<String> {
   @Test
   public void testOnError() {
     TestReport<String> result = suite("some tests suite", 
-        it.<String>should("check if it fails")
+        it.<String, String>should("check if it fails")
+          .skip()
           .when(error())
           .thenError(instanceOf(RuntimeException.class))
       ).run();
@@ -82,8 +86,9 @@ public class HelloTest extends TestSpec<String> {
     
     TestReport<String> result =
         suite("some tests suite",
-            it.<String>should("reapeat")
-              .when(task)
+            it.<IO<String>, String>should("reapeat")
+              .given(task)
+              .run(identity())
               .thenCheck(equalsTo("Hello Toni")).repeat(3)
             ).run();
     
@@ -101,8 +106,9 @@ public class HelloTest extends TestSpec<String> {
     
     TestReport<String> result =
         suite("some tests suite",
-            it.<String>should("retry on error")
-              .when(task)
+            it.<IO<String>, String>should("retry on error")
+              .given(task)
+              .run(identity())
               .thenCheck(equalsTo("Hello Toni")).retryOnError(3)
             ).run();
     
@@ -120,8 +126,9 @@ public class HelloTest extends TestSpec<String> {
     
     TestReport<String> result =
         suite("some tests suite",
-            it.<String>should("retry on failure")
-              .when(task)
+            it.<IO<String>, String>should("retry on failure")
+              .given(task)
+              .run(identity())
               .thenCheck(equalsTo("Hello Toni")).retryOnFailure(3)
             ).run();
     
@@ -134,8 +141,9 @@ public class HelloTest extends TestSpec<String> {
   public void timed() {
     TestReport<String> result =
         suite("some tests suite",
-            it.<String>should("timed")
-              .when(() -> "Hello Toni")
+            it.<String, String>should("timed")
+              .given("Hello Toni")
+              .when(identity())
               .thenCheck(equalsTo("Hello Toni")).timed()
             ).run();
 

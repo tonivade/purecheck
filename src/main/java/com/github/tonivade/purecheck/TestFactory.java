@@ -4,7 +4,7 @@
  */
 package com.github.tonivade.purecheck;
 
-import com.github.tonivade.purecheck.TestCase.WhenStep;
+import com.github.tonivade.purecheck.TestCase.GivenStep;
 
 public interface TestFactory<E> {
   
@@ -13,7 +13,7 @@ public interface TestFactory<E> {
     return (TestFactory<E>) TestFactoryModule.INSTANCE;
   }
 
-  default <T> WhenStep<E, T> should(String name) {
+  default <T, R> GivenStep<E, T, R> should(String name) {
     return TestCase.test(name);
   }
 }
