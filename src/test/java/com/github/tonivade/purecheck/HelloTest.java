@@ -30,29 +30,29 @@ import com.github.tonivade.purefun.monad.IO;
 import com.github.tonivade.purefun.type.Try;
 
 @ExtendWith(MockitoExtension.class)
-public class HelloTest extends TestSpec<String> {
+public class HelloTest extends TestSpec {
 
   @Test
   public void testHello() {
     Try<TestReport<String>> result =
         suite("some tests suite",
 
-            it.<String, String>should("say hello")
+            it.<String>should("say hello")
               .given("Toni")
               .run(HelloTest::hello)
               .thenCheck(equalsTo("Hello Toni")),
 
-            it.<String, String>should("don't say goodbye")
+            it.<String>should("don't say goodbye")
               .given("Toni")
               .run(HelloTest::hello)
               .thenCheck(startsWith("Bye")),
 
-            it.<String, String>should("catch exceptions")
+            it.<String>should("catch exceptions")
               .given("Toni")
               .when(error())
               .onSuccess(startsWith("Bye").combine(endsWith("Toni"))),
 
-            it.<String, String>should("disabled test")
+            it.<String>should("disabled test")
               .given("Toni")
               .when(error())
               .onSuccess(startsWith("Bye").combine(endsWith("Toni")))
@@ -68,7 +68,7 @@ public class HelloTest extends TestSpec<String> {
   @Test
   public void testOnError() {
     TestReport<String> result = suite("some tests suite", 
-        it.<String, String>should("check if it fails")
+        it.should("check if it fails")
           .skip()
           .when(error())
           .thenError(instanceOf(RuntimeException.class))

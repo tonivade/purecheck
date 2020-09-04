@@ -19,41 +19,41 @@ import org.junit.jupiter.api.Test;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyString;
 
-public class NonEmptyStringTest extends TestSpec<String> {
+public class NonEmptyStringTest extends TestSpec {
 
   private final TestSuite<String> suite = suite("NonEmptyString",
 
-      it.<String, NonEmptyString>should("not accept null")
-          .given(null)
+      it.should("not accept null")
+          .<String>given(null)
           .when(NonEmptyString::of)
           .thenError(instanceOf(IllegalArgumentException.class)),
 
-      it.<String, NonEmptyString>should("not accept empty string")
+      it.should("not accept empty string")
           .given("")
           .when(NonEmptyString::of)
           .thenError(instanceOf(IllegalArgumentException.class)),
 
-      it.<String, NonEmptyString>should("contains a non empty string")
+      it.should("contains a non empty string")
           .given("hola mundo")
           .when(NonEmptyString::of)
           .thenCheck(equalsTo("hola mundo").compose(NonEmptyString::get)),
 
-      it.<NonEmptyString, NonEmptyString>should("map inner value")
+      it.should("map inner value")
           .given(NonEmptyString.of("hola mundo"))
           .when(hello -> hello.map(String::toUpperCase))
           .thenCheck(equalsTo("HOLA MUNDO").compose(NonEmptyString::get)),
 
-      it.<NonEmptyString, String>should("transform inner value")
+      it.should("transform inner value")
           .given(NonEmptyString.of("hola mundo"))
           .when(hello -> hello.transform(String::toUpperCase))
           .thenCheck(equalsTo("HOLA MUNDO")),
 
-      it.<NonEmptyString, NonEmptyString>should("be equals to other string `hola mundo`")
+      it.should("be equals to other string `hola mundo`")
           .given(NonEmptyString.of("hola mundo"))
           .when(Function1.identity())
           .thenCheck(equalsTo(NonEmptyString.of("hola mundo"))),
 
-      it.<NonEmptyString, NonEmptyString>should("not be equals to other string different to `hola mundo`")
+      it.should("not be equals to other string different to `hola mundo`")
           .given(NonEmptyString.of("hola mundo"))
           .when(Function1.identity())
           .thenCheck(notEqualsTo(NonEmptyString.of("HOLA MUNDO")))

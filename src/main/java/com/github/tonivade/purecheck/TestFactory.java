@@ -4,23 +4,20 @@
  */
 package com.github.tonivade.purecheck;
 
-import com.github.tonivade.purecheck.TestCase.GivenStep;
-
-public interface TestFactory<E> {
+public interface TestFactory {
   
   @SuppressWarnings("unchecked")
-  static <E> TestFactory<E> factory() {
-    return (TestFactory<E>) TestFactoryModule.INSTANCE;
+  static <E> TestFactory factory() {
+    return TestFactoryModule.INSTANCE;
   }
 
-  default <T, R> GivenStep<E, T, R> should(String name) {
+  default TestCase.GivenStep should(String name) {
     return TestCase.test(name);
   }
 }
 
 interface TestFactoryModule {
 
-  @SuppressWarnings("rawtypes")
-  TestFactory<?> INSTANCE = new TestFactory() { };
+  TestFactory INSTANCE = new TestFactory() { };
   
 }
