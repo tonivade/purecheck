@@ -81,7 +81,6 @@ public class HelloTest extends TestSpec<String> {
   
   @Test
   public void repeat(@Mock IO<String> task) {
-    when(task.attempt()).thenCallRealMethod();
     when(task.unsafeRunSync()).thenReturn("Hello Toni");
     
     TestReport<String> result =
@@ -99,7 +98,6 @@ public class HelloTest extends TestSpec<String> {
   
   @Test
   public void retryOnError(@Mock IO<String> task) {
-    when(task.attempt()).thenCallRealMethod();
     when(task.unsafeRunSync())
       .thenThrow(RuntimeException.class)
       .thenReturn("Hello Toni");
@@ -119,7 +117,6 @@ public class HelloTest extends TestSpec<String> {
   
   @Test
   public void retryOnFailure(@Mock IO<String> task) {
-    when(task.attempt()).thenCallRealMethod();
     when(task.unsafeRunSync())
       .thenReturn("Hello World")
       .thenReturn("Hello Toni");
