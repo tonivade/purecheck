@@ -26,6 +26,8 @@ import com.github.tonivade.purefun.monad.IO;
 import com.github.tonivade.purefun.type.Either;
 import com.github.tonivade.purefun.type.Validation.Result;
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
+import com.github.tonivade.purefun.typeclasses.Schedule;
+import com.github.tonivade.purefun.typeclasses.Schedule.ScheduleOf;
 
 /**
  * It defines a test case, given an operation that eventually returns a value, then
@@ -228,17 +230,20 @@ final class TestCaseImpl<F extends Witness, E, T> implements SealedTestCaseK<F, 
 
   @Override
   public TestCaseK<F, E, T> retryOnFailure(int times) {
-    return new TestCaseImpl<>(monad, name, monad.flatMap(test, result -> result.isFailure() ? test.retry(times) : monad.pure(result)));
+    ScheduleOf<F> scheduleOfF = Schedule.of(monad, monad);
+    return new TestCaseImpl<>(monad, name, monad.flatMap(test, result -> result.isFailure() ? monad.retry(test, scheduleOfF.recurs(times)) : monad.pure(result)));
   }
 
   @Override
   public TestCaseK<F, E, T> retryOnError(int times) {
-    return new TestCaseImpl<>(monad, name, monad.flatMap(test, result -> result.isError() ? test.retry(times) : monad.pure(result)));
+    ScheduleOf<F> scheduleOfF = Schedule.of(monad, monad);
+    return new TestCaseImpl<>(monad, name, monad.flatMap(test, result -> result.isError() ? monad.retry(test, scheduleOfF.recurs(times)) : monad.pure(result)));
   }
 
   @Override
   public TestCaseK<F, E, T> repeat(int times) {
-    return new TestCaseImpl<>(monad, name, test.repeat(times));
+    ScheduleOf<F> scheduleOfF = Schedule.of(monad, monad);
+    return new TestCaseImpl<>(monad, name, monad.repeat(test, scheduleOfF.<TestResult<E, T>>recurs(times).zipRight(scheduleOfF.identity())));
   }
 
   private static <E, T> TestResult<E, T> fold(String name, Either<Throwable, T> result, Either<Validator<Result<E>, Throwable>, Validator<Result<E>, T>> then) {

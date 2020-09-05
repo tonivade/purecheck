@@ -48,11 +48,11 @@ compileTestJava {
 }
 
 dependencies {
-  annotationProcessor 'com.github.tonivade:purefun-processor:2.1.1'
-  api 'com.github.tonivade:purefun-typeclasses:2.1.1'
-  implementation 'com.github.tonivade:purefun-monad:2.1.1'
-  implementation 'com.github.tonivade:purefun-effect:2.1.1'
-  implementation 'com.github.tonivade:purefun-instances:2.1.1'
+  annotationProcessor 'com.github.tonivade:purefun-processor:2.2-SNAPSHOT'
+  api 'com.github.tonivade:purefun-typeclasses:2.2-SNAPSHOT'
+  implementation 'com.github.tonivade:purefun-monad:2.2-SNAPSHOT'
+  implementation 'com.github.tonivade:purefun-effect:2.2-SNAPSHOT'
+  implementation 'com.github.tonivade:purefun-instances:2.2-SNAPSHOT'
   testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
   testImplementation 'org.junit.platform:junit-platform-runner:1.6.2'
   testImplementation 'org.mockito:mockito-core:3.5.10'
