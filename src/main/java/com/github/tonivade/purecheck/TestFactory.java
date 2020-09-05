@@ -6,8 +6,7 @@ package com.github.tonivade.purecheck;
 
 public interface TestFactory {
   
-  @SuppressWarnings("unchecked")
-  static <E> TestFactory factory() {
+  static TestFactory factory() {
     return TestFactoryModule.INSTANCE;
   }
 
