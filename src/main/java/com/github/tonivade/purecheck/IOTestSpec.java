@@ -4,13 +4,16 @@
  */
 package com.github.tonivade.purecheck;
 
+import com.github.tonivade.purefun.instances.IOInstances;
+import com.github.tonivade.purefun.monad.IO_;
+
 /**
  * A silly class to define the test case factory and reuse
  *
  * @author tonivade
  */
-public class TestSpec {
+public class IOTestSpec {
 
-  protected final TestFactory it = TestFactory.factory();
+  protected final TestFactory<IO_> it = TestFactory.factory(IOInstances.monadDefer());
   
 }

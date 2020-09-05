@@ -4,7 +4,7 @@
  */
 package com.github.tonivade.purecheck;
 
-import static com.github.tonivade.purecheck.TestSuite.suite;
+import static com.github.tonivade.purecheck.TestSuiteK.suite;
 import static com.github.tonivade.purefun.Validator.equalsTo;
 import static com.github.tonivade.purefun.Validator.instanceOf;
 import static com.github.tonivade.purefun.Validator.notEqualsTo;
@@ -17,10 +17,11 @@ import org.junit.jupiter.api.Test;
 
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyString;
+import com.github.tonivade.purefun.monad.IO_;
 
-public class NonEmptyStringTest extends TestSpec {
+public class NonEmptyStringTest extends IOTestSpec {
 
-  private final TestSuite<String> suite = suite("NonEmptyString",
+  private final TestSuiteK<IO_, String> suite = suite("NonEmptyString",
 
       it.should("not accept null")
           .<String>givenNull()

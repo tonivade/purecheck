@@ -4,7 +4,7 @@
  */
 package com.github.tonivade.purecheck;
 
-import static com.github.tonivade.purecheck.TestSuite.suite;
+import static com.github.tonivade.purecheck.TestSuiteK.suite;
 import static com.github.tonivade.purefun.Function1.identity;
 import static com.github.tonivade.purefun.Validator.endsWith;
 import static com.github.tonivade.purefun.Validator.equalsTo;
@@ -30,7 +30,7 @@ import com.github.tonivade.purefun.monad.IO;
 import com.github.tonivade.purefun.type.Try;
 
 @ExtendWith(MockitoExtension.class)
-public class HelloTest extends TestSpec {
+public class HelloTest extends IOTestSpec {
 
   @Test
   public void testHello() {

@@ -9,6 +9,7 @@ import static com.github.tonivade.purefun.Precondition.checkNonNull;
 
 import java.util.concurrent.Executor;
 
+import com.github.tonivade.purefun.Witness;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.concurrent.ParOf;
 import com.github.tonivade.purefun.data.NonEmptyList;
@@ -24,29 +25,29 @@ import com.github.tonivade.purefun.monad.IO;
  *
  * @param <E> type of the error
  */
-public class TestSuite<E> {
+public class TestSuiteK<F extends Witness, E> {
 
   private final String name;
-  private final NonEmptyList<TestCase<E, ?>> tests;
+  private final NonEmptyList<TestCaseK<F, E, ?>> tests;
   
   /**
    * It will throw {@code NullPointerException} if the tests is null
    * 
    * @param tests list of tests
    */
-  private TestSuite(String name, NonEmptyList<TestCase<E, ?>> tests) {
+  private TestSuiteK(String name, NonEmptyList<TestCaseK<F, E, ?>> tests) {
     this.name = checkNonEmpty(name);
     this.tests = checkNonNull(tests);
   }
   
-  public TestSuite<E> addAll(TestSuite<E> other) {
-    return new TestSuite<>(
+  public TestSuiteK<F, E> addAll(TestSuiteK<F, E> other) {
+    return new TestSuiteK<>(
         this.name + " and " + other.name, 
         this.tests.appendAll(other.tests));
   }
 
   public IO<TestReport<E>> runIO() {
-    NonEmptyList<IO<TestResult<E, ?>>> map = (NonEmptyList) tests.map(TestCase::runIO);
+    NonEmptyList<IO<TestResult<E, ?>>> map = (NonEmptyList) tests.map(TestCaseK::runIO);
 
     return IO.traverse(map).map(xs -> new TestReport<>(name, xs));
   }
@@ -71,7 +72,7 @@ public class TestSuite<E> {
   }
   
   @SafeVarargs
-  public static <E> TestSuite<E> suite(String name, TestCase<E, ?> test, TestCase<E, ?>... tests) {
-    return new TestSuite<>(name, NonEmptyList.of(test, tests));
+  public static <F extends Witness, E> TestSuiteK<F, E> suite(String name, TestCaseK<F, E, ?> test, TestCaseK<F, E, ?>... tests) {
+    return new TestSuiteK<>(name, NonEmptyList.of(test, tests));
   }
 }
