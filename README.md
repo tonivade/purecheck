@@ -26,7 +26,7 @@ But in Java there are no type aliases, though we can create a class `TestCase` a
   }
 ```
 
-`TestResult` can have 4 different values:
+`TestResult<E, T>` can have 4 different values:
 
  - `Success` when everything is ok, 
  - `Failure` when the validations fail, 
@@ -39,39 +39,39 @@ This a simple example:
   TestSuite<String> suite = suite("NonEmptyString",
 
       it.should("not accept null")
-          .<String>given(null)
+          .<String>givenNull()
           .when(NonEmptyString::of)
-          .thenError(instanceOf(IllegalArgumentException.class)),
+          .thenThrows(instanceOf(IllegalArgumentException.class)),
 
       it.should("not accept empty string")
           .given("")
           .when(NonEmptyString::of)
-          .thenError(instanceOf(IllegalArgumentException.class)),
+          .thenThrows(instanceOf(IllegalArgumentException.class)),
 
       it.should("contains a non empty string")
           .given("hola mundo")
           .when(NonEmptyString::of)
-          .thenCheck(equalsTo("hola mundo").compose(NonEmptyString::get)),
+          .thenMustBe(equalsTo("hola mundo").compose(NonEmptyString::get)),
 
       it.should("map inner value")
           .given(NonEmptyString.of("hola mundo"))
           .when(hello -> hello.map(String::toUpperCase))
-          .thenCheck(equalsTo("HOLA MUNDO").compose(NonEmptyString::get)),
+          .thenMustBe(equalsTo("HOLA MUNDO").compose(NonEmptyString::get)),
 
       it.should("transform inner value")
           .given(NonEmptyString.of("hola mundo"))
           .when(hello -> hello.transform(String::toUpperCase))
-          .thenCheck(equalsTo("HOLA MUNDO")),
+          .thenMustBe(equalsTo("HOLA MUNDO")),
 
       it.should("be equals to other string `hola mundo`")
           .given(NonEmptyString.of("hola mundo"))
-          .when(Function1.identity())
-          .thenCheck(equalsTo(NonEmptyString.of("hola mundo"))),
+          .noop()
+          .thenMustBe(equalsTo(NonEmptyString.of("hola mundo"))),
 
       it.should("not be equals to other string different to `hola mundo`")
           .given(NonEmptyString.of("hola mundo"))
-          .when(Function1.identity())
-          .thenCheck(notEqualsTo(NonEmptyString.of("HOLA MUNDO")))
+          .noop()
+          .thenMustBe(notEqualsTo(NonEmptyString.of("HOLA MUNDO")))
   );
  ```
  
@@ -84,13 +84,13 @@ This a simple example:
  And the report generated looks like this:
  
  ```
-   NonEmptyString {
+  NonEmptyString {
     - it should 'not accept null' SUCCESS: 'java.lang.IllegalArgumentException: require non null'
     - it should 'not accept empty string' SUCCESS: 'java.lang.IllegalArgumentException: require non empty string'
     - it should 'contains a non empty string' SUCCESS: 'NonEmptyString(hola mundo)'
     - it should 'map inner value' SUCCESS: 'NonEmptyString(HOLA MUNDO)'
     - it should 'transform inner value' SUCCESS: 'HOLA MUNDO'
-    - it should 'be equals to `hola mundo`' SUCCESS: 'NonEmptyString(hola mundo)'
-    - it should 'be not equals to `HOLA MUNDO`' SUCCESS: 'NonEmptyString(hola mundo)'
-   }
+    - it should 'be equals to other string `hola mundo`' SUCCESS: 'NonEmptyString(hola mundo)'
+    - it should 'not be equals to other string different to `hola mundo`' SUCCESS: 'NonEmptyString(hola mundo)'
+  }
  ```

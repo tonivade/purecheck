@@ -37,25 +37,25 @@ public class HelloTest extends TestSpec {
     Try<TestReport<String>> result =
         suite("some tests suite",
 
-            it.<String>should("say hello")
+            it.should("say hello")
               .given("Toni")
               .run(HelloTest::hello)
-              .thenCheck(equalsTo("Hello Toni")),
+              .thenMustBe(equalsTo("Hello Toni")),
 
-            it.<String>should("don't say goodbye")
+            it.should("don't say goodbye")
               .given("Toni")
               .run(HelloTest::hello)
-              .thenCheck(startsWith("Bye")),
+              .thenMustBe(startsWith("Bye")),
 
-            it.<String>should("catch exceptions")
+            it.should("catch exceptions")
               .given("Toni")
               .when(error())
-              .onSuccess(startsWith("Bye").combine(endsWith("Toni"))),
+              .thenOnSuccess(startsWith("Bye").combine(endsWith("Toni"))),
 
-            it.<String>should("disabled test")
+            it.should("disabled test")
               .given("Toni")
               .when(error())
-              .onSuccess(startsWith("Bye").combine(endsWith("Toni")))
+              .thenOnSuccess(startsWith("Bye").combine(endsWith("Toni")))
               .disable("not working")
 
           ).parRun(Future.DEFAULT_EXECUTOR).await();
@@ -64,14 +64,14 @@ public class HelloTest extends TestSpec {
     
     assertThrows(AssertionError.class, result.get()::assertion);
   }
-  
+
   @Test
   public void testOnError() {
     TestReport<String> result = suite("some tests suite", 
         it.should("check if it fails")
-          .skip()
+          .noGiven()
           .when(error())
-          .thenError(instanceOf(RuntimeException.class))
+          .thenThrows(instanceOf(RuntimeException.class))
       ).run();
     
     System.out.println(result);
@@ -85,17 +85,35 @@ public class HelloTest extends TestSpec {
     
     TestReport<String> result =
         suite("some tests suite",
-            it.<IO<String>, String>should("reapeat")
+            it.should("reapeat")
               .given(task)
               .run(identity())
-              .thenCheck(equalsTo("Hello Toni")).repeat(3)
+              .thenMustBe(equalsTo("Hello Toni")).repeat(3)
             ).run();
     
     verify(task, times(4)).unsafeRunSync();
     
     System.out.println(result);
   }
-  
+
+  @Test
+  public void retryOnErrorWhenSuccess(@Mock IO<String> task) {
+    when(task.unsafeRunSync())
+        .thenReturn("Hello Toni");
+
+    TestReport<String> result =
+        suite("some tests suite",
+            it.should("retry on error")
+                .given(task)
+                .run(identity())
+                .thenMustBe(equalsTo("Hello Toni")).retryOnError(3)
+        ).run();
+
+    verify(task, times(1)).unsafeRunSync();
+
+    System.out.println(result);
+  }
+
   @Test
   public void retryOnError(@Mock IO<String> task) {
     when(task.unsafeRunSync())
@@ -104,17 +122,35 @@ public class HelloTest extends TestSpec {
     
     TestReport<String> result =
         suite("some tests suite",
-            it.<IO<String>, String>should("retry on error")
+            it.should("retry on error")
               .given(task)
               .run(identity())
-              .thenCheck(equalsTo("Hello Toni")).retryOnError(3)
+              .thenMustBe(equalsTo("Hello Toni")).retryOnError(3)
             ).run();
     
     verify(task, times(2)).unsafeRunSync();
     
     System.out.println(result);
   }
-  
+
+  @Test
+  public void retryOnFailureWhenSuccess(@Mock IO<String> task) {
+    when(task.unsafeRunSync())
+        .thenReturn("Hello Toni");
+
+    TestReport<String> result =
+        suite("some tests suite",
+            it.should("retry on failure")
+                .given(task)
+                .run(identity())
+                .thenMustBe(equalsTo("Hello Toni")).retryOnFailure(3)
+        ).run();
+
+    verify(task, times(1)).unsafeRunSync();
+
+    System.out.println(result);
+  }
+
   @Test
   public void retryOnFailure(@Mock IO<String> task) {
     when(task.unsafeRunSync())
@@ -123,10 +159,10 @@ public class HelloTest extends TestSpec {
     
     TestReport<String> result =
         suite("some tests suite",
-            it.<IO<String>, String>should("retry on failure")
+            it.should("retry on failure")
               .given(task)
               .run(identity())
-              .thenCheck(equalsTo("Hello Toni")).retryOnFailure(3)
+              .thenMustBe(equalsTo("Hello Toni")).retryOnFailure(3)
             ).run();
     
     verify(task, times(2)).unsafeRunSync();
@@ -138,10 +174,10 @@ public class HelloTest extends TestSpec {
   public void timed() {
     TestReport<String> result =
         suite("some tests suite",
-            it.<String, String>should("timed")
+            it.should("timed")
               .given("Hello Toni")
               .when(identity())
-              .thenCheck(equalsTo("Hello Toni")).timed()
+              .thenMustBe(equalsTo("Hello Toni")).timed()
             ).run();
 
     System.out.println(result);

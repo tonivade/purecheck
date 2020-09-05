@@ -8,12 +8,18 @@ import static com.github.tonivade.purecheck.TestResult.disabled;
 import static com.github.tonivade.purecheck.TestResult.error;
 import static com.github.tonivade.purecheck.TestResult.failure;
 import static com.github.tonivade.purecheck.TestResult.success;
+import static com.github.tonivade.purefun.Function1.identity;
 import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
 
 import java.time.Duration;
 
-import com.github.tonivade.purefun.*;
+import com.github.tonivade.purefun.Function1;
+import com.github.tonivade.purefun.HigherKind;
+import com.github.tonivade.purefun.Producer;
+import com.github.tonivade.purefun.Tuple;
+import com.github.tonivade.purefun.Tuple2;
+import com.github.tonivade.purefun.Validator;
 import com.github.tonivade.purefun.monad.IO;
 import com.github.tonivade.purefun.type.Either;
 import com.github.tonivade.purefun.type.Try;
@@ -67,7 +73,11 @@ public interface TestCase<E, T> extends TestCaseOf<E, T> {
       return new WhenStep<>(name, given);
     }
 
-    public <T> WhenStep<T> skip() {
+    public <T> WhenStep<T> givenNull() {
+      return given(null);
+    }
+
+    public <T> WhenStep<T> noGiven() {
       return given(null);
     }
   }
@@ -89,6 +99,10 @@ public interface TestCase<E, T> extends TestCaseOf<E, T> {
 
     public <R> ThenStep<T, R> when(Function1<T, R> when) {
       return run(when.liftTry().andThen(result -> result.fold(IO::raiseError, IO::pure)));
+    }
+
+    public ThenStep<T, T> noop() {
+      return when(identity());
     }
 
     public <R> ThenStep<T, R> when(IO<R> when) {
@@ -120,20 +134,20 @@ public interface TestCase<E, T> extends TestCaseOf<E, T> {
       return new TestCaseImpl<>(name, IO.suspend(() -> when.apply(given)), then);
     }
 
-    public <E> TestCase<E, R> onSuccess(Validator<Result<E>, R> validator) {
+    public <E> TestCase<E, R> thenOnSuccess(Validator<Result<E>, R> validator) {
       return then(Either.right(validator));
     }
 
-    public <E> TestCase<E, R> onFailure(Validator<Result<E>, Throwable> validator) {
+    public <E> TestCase<E, R> thenOnFailure(Validator<Result<E>, Throwable> validator) {
       return then(Either.left(validator));
     }
 
-    public <E> TestCase<E, R> thenCheck(Validator<E, R> validator) {
-      return onSuccess(validator.mapError(Result::of));
+    public <E> TestCase<E, R> thenMustBe(Validator<E, R> validator) {
+      return thenOnSuccess(validator.mapError(Result::of));
     }
 
-    public <E> TestCase<E, R> thenError(Validator<E, Throwable> validator) {
-      return onFailure(validator.mapError(Result::of));
+    public <E> TestCase<E, R> thenThrows(Validator<E, Throwable> validator) {
+      return thenOnFailure(validator.mapError(Result::of));
     }
   }
 }
@@ -197,17 +211,18 @@ final class TestCaseImpl<E, T> implements SealedTestCase<E, T> {
 
   @Override
   public TestCase<E, Tuple2<Duration, T>> timed() {
-    return new TestCaseImpl<>(name, test.timed().map(tuple -> tuple.applyTo((duration, result) -> result.map(value -> Tuple.of(duration, value)))));
+    return new TestCaseImpl<>(name, test.timed().map(
+        tuple -> tuple.applyTo((duration, result) -> result.map(value -> Tuple.of(duration, value)))));
   }
 
   @Override
   public TestCase<E, T> retryOnFailure(int times) {
-    return new TestCaseImpl<>(name, test.flatMap(result -> result.isFailure() ? test.retry(times) : test));
+    return new TestCaseImpl<>(name, test.flatMap(result -> result.isFailure() ? test.retry(times) : IO.pure(result)));
   }
 
   @Override
   public TestCase<E, T> retryOnError(int times) {
-    return new TestCaseImpl<>(name, test.flatMap(result -> result.isError() ? test.retry(times) : test));
+    return new TestCaseImpl<>(name, test.flatMap(result -> result.isError() ? test.retry(times) : IO.pure(result)));
   }
 
   @Override
