@@ -24,8 +24,6 @@ import com.github.tonivade.purefun.Witness;
 import com.github.tonivade.purefun.type.Either;
 import com.github.tonivade.purefun.type.Validation.Result;
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
-import com.github.tonivade.purefun.typeclasses.Schedule;
-import com.github.tonivade.purefun.typeclasses.Schedule.ScheduleOf;
 
 /**
  * It defines a test case, given an operation that eventually returns a value, then
@@ -174,7 +172,6 @@ final class TestCaseImpl<F extends Witness, E, T> implements SealedTestCaseK<F, 
   private final String name;
   private final Kind<F, TestResult<E, T>> test;
   private final MonadDefer<F> monad;
-  private final ScheduleOf<F> scheduleOfF;
   
   /**
    * It will throw {@code IllegalArgumentException} if parameters are null or if name is a empty string
@@ -186,7 +183,6 @@ final class TestCaseImpl<F extends Witness, E, T> implements SealedTestCaseK<F, 
    */
   protected TestCaseImpl(MonadDefer<F> monad, String name, Kind<F, T> when, Either<Validator<Result<E>, Throwable>, Validator<Result<E>, T>> then) {
     this.monad = checkNonNull(monad);
-    this.scheduleOfF = Schedule.of(monad);
     checkNonNull(when);
     checkNonNull(then);
     this.name = checkNonEmpty(name);
@@ -197,13 +193,11 @@ final class TestCaseImpl<F extends Witness, E, T> implements SealedTestCaseK<F, 
    * Private constructor used mainly for method decorators, like retry or repeat
    * 
    * @param monad monad instance for the type F
-   * @param schedule schedule instance for the type F
    * @param name name of the test case
    * @param test test and validation to be executed
    */
-  private TestCaseImpl(MonadDefer<F> monad, ScheduleOf<F> scheduleOfF, String name, Kind<F, TestResult<E, T>> test) {
+  private TestCaseImpl(MonadDefer<F> monad, String name, Kind<F, TestResult<E, T>> test) {
     this.monad  = checkNonNull(monad);
-    this.scheduleOfF = checkNonNull(scheduleOfF);
     this.name = checkNonEmpty(name);
     this.test = checkNonNull(test);
   }
@@ -225,7 +219,7 @@ final class TestCaseImpl<F extends Witness, E, T> implements SealedTestCaseK<F, 
 
   @Override
   public TestCaseK<F, E, T> disable(String reason) {
-    return new TestCaseImpl<>(monad, scheduleOfF, name, monad.pure(disabled(name, reason)));
+    return new TestCaseImpl<>(monad, name, monad.pure(disabled(name, reason)));
   }
 
   @Override
@@ -237,20 +231,20 @@ final class TestCaseImpl<F extends Witness, E, T> implements SealedTestCaseK<F, 
 
   @Override
   public TestCaseK<F, E, T> retryOnFailure(int times) {
-    return new TestCaseImpl<>(monad, scheduleOfF, name, 
-      monad.flatMap(test, result -> result.isFailure() ? monad.retry(test, scheduleOfF.recurs(times)) : monad.pure(result)));
+    return new TestCaseImpl<>(monad, name, 
+      monad.flatMap(test, result -> result.isFailure() ? monad.retry(test, monad.scheduleOf().recurs(times)) : monad.pure(result)));
   }
 
   @Override
   public TestCaseK<F, E, T> retryOnError(int times) {
-    return new TestCaseImpl<>(monad, scheduleOfF, name, 
-      monad.flatMap(test, result -> result.isError() ? monad.retry(test, scheduleOfF.recurs(times)) : monad.pure(result)));
+    return new TestCaseImpl<>(monad, name, 
+      monad.flatMap(test, result -> result.isError() ? monad.retry(test, monad.scheduleOf().recurs(times)) : monad.pure(result)));
   }
 
   @Override
   public TestCaseK<F, E, T> repeat(int times) {
-    return new TestCaseImpl<>(monad, scheduleOfF, name, 
-      monad.repeat(test, scheduleOfF.<TestResult<E, T>>recurs(times).zipRight(scheduleOfF.identity())));
+    return new TestCaseImpl<>(monad, name, 
+      monad.repeat(test, monad.scheduleOf().<TestResult<E, T>>recurs(times).zipRight(monad.scheduleOf().identity())));
   }
 
   private static <E, T> TestResult<E, T> fold(String name, Either<Throwable, T> result, Either<Validator<Result<E>, Throwable>, Validator<Result<E>, T>> then) {
