@@ -13,7 +13,7 @@ import com.github.tonivade.purefun.monad.IO_;
  *
  * @author tonivade
  */
-public class IOTestSpec {
+public abstract class IOTestSpec {
 
   protected final TestFactory<IO_> it = TestFactory.factory(IOInstances.monadDefer());
   

@@ -13,7 +13,7 @@ import com.github.tonivade.purefun.instances.UIOInstances;
  *
  * @author tonivade
  */
-public class UIOTestSpec {
+public abstract class UIOTestSpec {
 
   protected final TestFactory<UIO_> it = TestFactory.factory(UIOInstances.monadDefer());
   
