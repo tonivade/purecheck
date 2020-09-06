@@ -6,15 +6,24 @@ package com.github.tonivade.purecheck;
 
 import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
+import static com.github.tonivade.purefun.concurrent.FutureOf.toFuture;
+import static com.github.tonivade.purefun.data.ImmutableList.empty;
+import static com.github.tonivade.purefun.effect.UIOOf.toUIO;
+import static com.github.tonivade.purefun.monad.IOOf.toIO;
 
 import java.util.concurrent.Executor;
 
+import com.github.tonivade.purefun.Kind;
 import com.github.tonivade.purefun.Witness;
 import com.github.tonivade.purefun.concurrent.Future;
-import com.github.tonivade.purefun.concurrent.ParOf;
 import com.github.tonivade.purefun.data.NonEmptyList;
-import com.github.tonivade.purefun.instances.ParInstances;
-import com.github.tonivade.purefun.monad.IO;
+import com.github.tonivade.purefun.data.Sequence;
+import com.github.tonivade.purefun.effect.UIO_;
+import com.github.tonivade.purefun.instances.FutureInstances;
+import com.github.tonivade.purefun.instances.IOInstances;
+import com.github.tonivade.purefun.instances.UIOInstances;
+import com.github.tonivade.purefun.monad.IO_;
+import com.github.tonivade.purefun.typeclasses.Applicative;
 
 /**
  * It defines a test suite that is composed by a non empty collection of test cases
@@ -26,9 +35,10 @@ import com.github.tonivade.purefun.monad.IO;
  * @param <E> type of the kind
  * @param <E> type of the error
  */
-public class TestSuite<F extends Witness, E> {
+public abstract class TestSuite<F extends Witness, E> {
 
   private final String name;
+  private final Applicative<F> applicative;
   private final NonEmptyList<TestCase<F, E, ?>> tests;
   
   /**
@@ -36,22 +46,20 @@ public class TestSuite<F extends Witness, E> {
    * 
    * @param tests list of tests
    */
-  private TestSuite(String name, NonEmptyList<TestCase<F, E, ?>> tests) {
+  public TestSuite(Applicative<F> applicative, String name, NonEmptyList<TestCase<F, E, ?>> tests) {
+    this.applicative = checkNonNull(applicative);
     this.name = checkNonEmpty(name);
     this.tests = checkNonNull(tests);
   }
-  
-  public TestSuite<F, E> addAll(TestSuite<F, E> other) {
-    return new TestSuite<>(
-        this.name + " and " + other.name, 
-        this.tests.appendAll(other.tests));
-  }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  public IO<TestReport<E>> runIO() {
-    NonEmptyList<IO<TestResult<E, ?>>> map = (NonEmptyList) tests.map(TestCase::runIO);
+  public Kind<F, TestReport<E>> runK() {
+    NonEmptyList<Kind<F, TestResult<E, ?>>> list = (NonEmptyList) tests.map(TestCase::run);
+    
+    Kind<F, Sequence<TestResult<E, ?>>> foldLeft = list.foldLeft(applicative.pure(empty()), 
+        (xs, a) -> applicative.map2(xs, a, (l, e) -> l.append(e)));
 
-    return IO.traverse(map).map(xs -> new TestReport<>(name, xs));
+    return applicative.map(foldLeft, xs -> new TestReport<>(name, xs));
   }
 
   /**
@@ -59,9 +67,7 @@ public class TestSuite<F extends Witness, E> {
    * 
    * @return the result of the suite
    */
-  public TestReport<E> run() {
-    return runIO().unsafeRunSync();
-  }
+  public abstract TestReport<E> run();
 
   /**
    * It runs the suite in parallel using the given {@code Executor}
@@ -69,12 +75,37 @@ public class TestSuite<F extends Witness, E> {
    * @param executor executor on which the suite is going to be executed
    * @return a promise with the result of the suite
    */
-  public Future<TestReport<E>> parRun(Executor executor) {
-    return runIO().foldMap(ParInstances.monadDefer()).fix(ParOf::narrowK).apply(executor);
+  public abstract Future<TestReport<E>> parRun(Executor executor);
+  
+  @SafeVarargs
+  public static <E> TestSuite<IO_, E> suiteIO(
+      String name, TestCase<IO_, E, ?> test, TestCase<IO_, E, ?>... tests) {
+    return new TestSuite<IO_, E>(IOInstances.monad(), name, NonEmptyList.of(test, tests)) {
+      @Override
+      public TestReport<E> run() {
+        return runK().fix(toIO()).unsafeRunSync();
+      }
+      
+      @Override
+      public Future<TestReport<E>> parRun(Executor executor) {
+        return runK().fix(toIO()).foldMap(FutureInstances.monadDefer()).fix(toFuture());
+      }
+    };
   }
   
   @SafeVarargs
-  public static <F extends Witness, E> TestSuite<F, E> suite(String name, TestCase<F, E, ?> test, TestCase<F, E, ?>... tests) {
-    return new TestSuite<>(name, NonEmptyList.of(test, tests));
+  public static <E> TestSuite<UIO_, E> suiteUIO(
+      String name, TestCase<UIO_, E, ?> test, TestCase<UIO_, E, ?>... tests) {
+    return new TestSuite<UIO_, E>(UIOInstances.monad(), name, NonEmptyList.of(test, tests)) {
+      @Override
+      public TestReport<E> run() {
+        return runK().fix(toUIO()).unsafeRunSync();
+      }
+      
+      @Override
+      public Future<TestReport<E>> parRun(Executor executor) {
+        return runK().fix(toUIO()).foldMap(FutureInstances.monadDefer()).fix(toFuture());
+      }
+    };
   }
 }

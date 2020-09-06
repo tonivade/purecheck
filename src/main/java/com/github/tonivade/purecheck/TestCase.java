@@ -40,7 +40,7 @@ public interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, E, T> {
 
   String name();
 
-  Kind<F, TestResult<E, T>> runIO();
+  Kind<F, TestResult<E, T>> run();
 
   TestCase<F, E, T> disable(String reason);
 
@@ -213,7 +213,7 @@ final class TestCaseImpl<F extends Witness, E, T> implements SealedTestCase<F, E
    * @return the validation result
    */
   @Override
-  public Kind<F, TestResult<E, T>> runIO() {
+  public Kind<F, TestResult<E, T>> run() {
     return test;
   }
 
