@@ -19,7 +19,7 @@ import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyString;
 import com.github.tonivade.purefun.monad.IO_;
 
-public class NonEmptyStringTest extends IOTestSpec {
+class NonEmptyStringTest extends IOTestSpec {
 
   private final TestSuiteK<IO_, String> suite = suite("NonEmptyString",
 
@@ -60,7 +60,7 @@ public class NonEmptyStringTest extends IOTestSpec {
   );
 
   @Test
-  public void junit5() {
+  void junit5() {
     assertAll(
         () -> assertThrows(IllegalArgumentException.class, () -> NonEmptyString.of(null)),
         () -> assertThrows(IllegalArgumentException.class, () -> NonEmptyString.of("")),
@@ -73,7 +73,7 @@ public class NonEmptyStringTest extends IOTestSpec {
   }
 
   @Test
-  public void serial() {
+  void serial() {
     TestReport<String> run = suite.run();
 
     run.assertion();
@@ -82,7 +82,7 @@ public class NonEmptyStringTest extends IOTestSpec {
   }
 
   @Test
-  public void parallel() {
+  void parallel() {
     suite.parRun(Future.DEFAULT_EXECUTOR).await().onSuccess(TestReport::assertion);
   }
 }

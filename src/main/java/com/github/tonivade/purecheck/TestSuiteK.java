@@ -46,6 +46,7 @@ public class TestSuiteK<F extends Witness, E> {
         this.tests.appendAll(other.tests));
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public IO<TestReport<E>> runIO() {
     NonEmptyList<IO<TestResult<E, ?>>> map = (NonEmptyList) tests.map(TestCaseK::runIO);
 
