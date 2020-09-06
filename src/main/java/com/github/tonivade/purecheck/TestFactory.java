@@ -15,7 +15,7 @@ public interface TestFactory<F extends Witness> {
   
   MonadDefer<F> monad();
 
-  default TestCaseK.GivenStep<F> should(String name) {
-    return TestCaseK.test(monad(), name);
+  default TestCase.GivenStep<F> should(String name) {
+    return TestCase.test(monad(), name);
   }
 }

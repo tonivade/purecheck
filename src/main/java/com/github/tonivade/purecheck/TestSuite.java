@@ -23,32 +23,33 @@ import com.github.tonivade.purefun.monad.IO;
  * 
  * @author tonivade
  *
+ * @param <E> type of the kind
  * @param <E> type of the error
  */
-public class TestSuiteK<F extends Witness, E> {
+public class TestSuite<F extends Witness, E> {
 
   private final String name;
-  private final NonEmptyList<TestCaseK<F, E, ?>> tests;
+  private final NonEmptyList<TestCase<F, E, ?>> tests;
   
   /**
    * It will throw {@code NullPointerException} if the tests is null
    * 
    * @param tests list of tests
    */
-  private TestSuiteK(String name, NonEmptyList<TestCaseK<F, E, ?>> tests) {
+  private TestSuite(String name, NonEmptyList<TestCase<F, E, ?>> tests) {
     this.name = checkNonEmpty(name);
     this.tests = checkNonNull(tests);
   }
   
-  public TestSuiteK<F, E> addAll(TestSuiteK<F, E> other) {
-    return new TestSuiteK<>(
+  public TestSuite<F, E> addAll(TestSuite<F, E> other) {
+    return new TestSuite<>(
         this.name + " and " + other.name, 
         this.tests.appendAll(other.tests));
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   public IO<TestReport<E>> runIO() {
-    NonEmptyList<IO<TestResult<E, ?>>> map = (NonEmptyList) tests.map(TestCaseK::runIO);
+    NonEmptyList<IO<TestResult<E, ?>>> map = (NonEmptyList) tests.map(TestCase::runIO);
 
     return IO.traverse(map).map(xs -> new TestReport<>(name, xs));
   }
@@ -73,7 +74,7 @@ public class TestSuiteK<F extends Witness, E> {
   }
   
   @SafeVarargs
-  public static <F extends Witness, E> TestSuiteK<F, E> suite(String name, TestCaseK<F, E, ?> test, TestCaseK<F, E, ?>... tests) {
-    return new TestSuiteK<>(name, NonEmptyList.of(test, tests));
+  public static <F extends Witness, E> TestSuite<F, E> suite(String name, TestCase<F, E, ?> test, TestCase<F, E, ?>... tests) {
+    return new TestSuite<>(name, NonEmptyList.of(test, tests));
   }
 }

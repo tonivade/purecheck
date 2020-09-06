@@ -36,21 +36,21 @@ import com.github.tonivade.purefun.typeclasses.MonadDefer;
  * @param <T> type of the result returned by the operation
  */
 @HigherKind(sealed = true)
-public interface TestCaseK<F extends Witness, E, T> extends TestCaseKOf<F, E, T> {
+public interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, E, T> {
 
   String name();
 
   Kind<F, TestResult<E, T>> runIO();
 
-  TestCaseK<F, E, T> disable(String reason);
+  TestCase<F, E, T> disable(String reason);
 
-  TestCaseK<F, E, Tuple2<Duration, T>> timed();
+  TestCase<F, E, Tuple2<Duration, T>> timed();
 
-  TestCaseK<F, E, T> retryOnFailure(int times);
+  TestCase<F, E, T> retryOnFailure(int times);
 
-  TestCaseK<F, E, T> retryOnError(int times);
+  TestCase<F, E, T> retryOnError(int times);
 
-  TestCaseK<F, E, T> repeat(int times);
+  TestCase<F, E, T> repeat(int times);
 
   /**
    * It returns a builder to create a new test case
@@ -136,23 +136,23 @@ public interface TestCaseK<F extends Witness, E, T> extends TestCaseKOf<F, E, T>
       this.when = when;
     }
 
-    public <E> TestCaseK<F, E, R> then(Either<Validator<Result<E>, Throwable>, Validator<Result<E>, R>> then) {
+    public <E> TestCase<F, E, R> then(Either<Validator<Result<E>, Throwable>, Validator<Result<E>, R>> then) {
       return new TestCaseImpl<>(monad, name, monad.defer(() -> when.apply(given)), then);
     }
 
-    public <E> TestCaseK<F, E, R> thenOnSuccess(Validator<Result<E>, R> validator) {
+    public <E> TestCase<F, E, R> thenOnSuccess(Validator<Result<E>, R> validator) {
       return then(Either.right(validator));
     }
 
-    public <E> TestCaseK<F, E, R> thenOnFailure(Validator<Result<E>, Throwable> validator) {
+    public <E> TestCase<F, E, R> thenOnFailure(Validator<Result<E>, Throwable> validator) {
       return then(Either.left(validator));
     }
 
-    public <E> TestCaseK<F, E, R> thenMustBe(Validator<E, R> validator) {
+    public <E> TestCase<F, E, R> thenMustBe(Validator<E, R> validator) {
       return thenOnSuccess(validator.mapError(Result::of));
     }
 
-    public <E> TestCaseK<F, E, R> thenThrows(Validator<E, Throwable> validator) {
+    public <E> TestCase<F, E, R> thenThrows(Validator<E, Throwable> validator) {
       return thenOnFailure(validator.mapError(Result::of));
     }
   }
@@ -167,7 +167,7 @@ public interface TestCaseK<F extends Witness, E, T> extends TestCaseKOf<F, E, T>
  * @param <E> type of error generated
  * @param <T> type of the result returned by the operation
  */
-final class TestCaseImpl<F extends Witness, E, T> implements SealedTestCaseK<F, E, T> {
+final class TestCaseImpl<F extends Witness, E, T> implements SealedTestCase<F, E, T> {
   
   private final String name;
   private final Kind<F, TestResult<E, T>> test;
@@ -218,31 +218,31 @@ final class TestCaseImpl<F extends Witness, E, T> implements SealedTestCaseK<F, 
   }
 
   @Override
-  public TestCaseK<F, E, T> disable(String reason) {
+  public TestCase<F, E, T> disable(String reason) {
     return new TestCaseImpl<>(monad, name, monad.pure(disabled(name, reason)));
   }
 
   @Override
-  public TestCaseK<F, E, Tuple2<Duration, T>> timed() {
+  public TestCase<F, E, Tuple2<Duration, T>> timed() {
 //    return new TestCaseImpl<>(monad, scheduleOfF, name, test.timed().map(
 //        tuple -> tuple.applyTo((duration, result) -> result.map(value -> Tuple.of(duration, value)))));
     throw new UnsupportedOperationException("not implemented");
   }
 
   @Override
-  public TestCaseK<F, E, T> retryOnFailure(int times) {
+  public TestCase<F, E, T> retryOnFailure(int times) {
     return new TestCaseImpl<>(monad, name, 
       monad.flatMap(test, result -> result.isFailure() ? monad.retry(test, monad.scheduleOf().recurs(times)) : monad.pure(result)));
   }
 
   @Override
-  public TestCaseK<F, E, T> retryOnError(int times) {
+  public TestCase<F, E, T> retryOnError(int times) {
     return new TestCaseImpl<>(monad, name, 
       monad.flatMap(test, result -> result.isError() ? monad.retry(test, monad.scheduleOf().recurs(times)) : monad.pure(result)));
   }
 
   @Override
-  public TestCaseK<F, E, T> repeat(int times) {
+  public TestCase<F, E, T> repeat(int times) {
     return new TestCaseImpl<>(monad, name, 
       monad.repeat(test, monad.scheduleOf().<TestResult<E, T>>recurs(times).zipRight(monad.scheduleOf().identity())));
   }

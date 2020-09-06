@@ -4,7 +4,7 @@
  */
 package com.github.tonivade.purecheck;
 
-import static com.github.tonivade.purecheck.TestSuiteK.suite;
+import static com.github.tonivade.purecheck.TestSuite.suite;
 import static com.github.tonivade.purefun.Validator.equalsTo;
 import static com.github.tonivade.purefun.Validator.instanceOf;
 import static com.github.tonivade.purefun.Validator.notEqualsTo;
@@ -21,7 +21,7 @@ import com.github.tonivade.purefun.monad.IO_;
 
 class NonEmptyStringTest extends IOTestSpec {
 
-  private final TestSuiteK<IO_, String> suite = suite("NonEmptyString",
+  private final TestSuite<IO_, String> suite = suite("NonEmptyString",
 
       it.should("not accept null")
           .<String>givenNull()
