@@ -16,14 +16,14 @@ import java.time.Duration;
 
 import com.github.tonivade.purefun.Function1;
 import com.github.tonivade.purefun.HigherKind;
+import com.github.tonivade.purefun.Kind;
 import com.github.tonivade.purefun.Producer;
-import com.github.tonivade.purefun.Tuple;
 import com.github.tonivade.purefun.Tuple2;
 import com.github.tonivade.purefun.Validator;
-import com.github.tonivade.purefun.monad.IO;
+import com.github.tonivade.purefun.Witness;
 import com.github.tonivade.purefun.type.Either;
-import com.github.tonivade.purefun.type.Try;
 import com.github.tonivade.purefun.type.Validation.Result;
+import com.github.tonivade.purefun.typeclasses.MonadDefer;
 
 /**
  * It defines a test case, given an operation that eventually returns a value, then
@@ -31,25 +31,26 @@ import com.github.tonivade.purefun.type.Validation.Result;
  * 
  * @author tonivade
  *
+ * @param <F> type of the test case
  * @param <E> type of error generated
  * @param <T> type of the result returned by the operation
  */
 @HigherKind(sealed = true)
-public interface TestCase<E, T> extends TestCaseOf<E, T> {
+public interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, E, T> {
 
   String name();
 
-  IO<TestResult<E, T>> runIO();
+  Kind<F, TestResult<E, T>> run();
 
-  TestCase<E, T> disable(String reason);
+  TestCase<F, E, T> disable(String reason);
 
-  TestCase<E, Tuple2<Duration, T>> timed();
+  TestCase<F, E, Tuple2<Duration, T>> timed();
 
-  TestCase<E, T> retryOnFailure(int times);
+  TestCase<F, E, T> retryOnFailure(int times);
 
-  TestCase<E, T> retryOnError(int times);
+  TestCase<F, E, T> retryOnError(int times);
 
-  TestCase<E, T> repeat(int times);
+  TestCase<F, E, T> repeat(int times);
 
   /**
    * It returns a builder to create a new test case
@@ -57,134 +58,146 @@ public interface TestCase<E, T> extends TestCaseOf<E, T> {
    * @param name name of the test case
    * @return a new test case
    */
-  static GivenStep test(String name) {
-    return new GivenStep(name);
+  static <F extends Witness> GivenStep<F> test(MonadDefer<F> monad, String name) {
+    return new GivenStep<>(monad, name);
   }
 
-  final class GivenStep {
+  final class GivenStep<F extends Witness> {
 
+    private final MonadDefer<F> monad;
     private final String name;
 
-    private GivenStep(String name) {
+    private GivenStep(MonadDefer<F> monad, String name) {
+      this.monad = monad;
       this.name = name;
     }
 
-    public <T> WhenStep<T> given(T given) {
-      return new WhenStep<>(name, given);
+    public <T> WhenStep<F, T> given(T given) {
+      return new WhenStep<>(monad, name, given);
     }
 
-    public <T> WhenStep<T> givenNull() {
+    public <T> WhenStep<F, T> givenNull() {
       return given(null);
     }
 
-    public <T> WhenStep<T> noGiven() {
+    public <T> WhenStep<F, T> noGiven() {
       return given(null);
     }
   }
 
-  final class WhenStep<T> {
+  final class WhenStep<F extends Witness, T> {
 
+    private final MonadDefer<F> monad;
     private final String name;
-
     private final T given;
 
-    private WhenStep(String name, T given) {
+    private WhenStep(MonadDefer<F> monad, String name, T given) {
+      this.monad = monad;
       this.name = name;
       this.given = given;
     }
 
-    public <R> ThenStep<T, R> run(Function1<T, IO<R>> when) {
-      return new ThenStep<>(name, given, when);
+    public <R> ThenStep<F, T, R> run(Function1<T, ? extends Kind<F, R>> when) {
+      return new ThenStep<>(monad, name, given, when);
     }
 
-    public <R> ThenStep<T, R> when(Function1<T, R> when) {
-      return run(when.liftTry().andThen(result -> result.fold(IO::raiseError, IO::pure)));
+    public <R> ThenStep<F, T, R> when(Function1<T, R> when) {
+      return run(when.liftTry().andThen(result -> result.fold(monad::raiseError, monad::pure)));
     }
 
-    public ThenStep<T, T> noop() {
+    public ThenStep<F, T, T> noop() {
       return when(identity());
     }
 
-    public <R> ThenStep<T, R> when(IO<R> when) {
+    public <R> ThenStep<F, T, R> when(Kind<F, R> when) {
       return run(ignore -> when);
     }
 
-    public <R> ThenStep<T, R> when(Producer<R> when) {
-      return when(IO.task(when));
+    public <R> ThenStep<F, T, R> when(Producer<R> when) {
+      return when(monad.later(when));
     }
 
-    public <R> ThenStep<T, R> error(Throwable error) {
-      return when(IO.raiseError(error));
+    public <R> ThenStep<F, T, R> error(Throwable error) {
+      return when(monad.raiseError(error));
     }
   }
 
-  final class ThenStep<T, R> {
+  final class ThenStep<F extends Witness, T, R> {
 
+    private final MonadDefer<F> monad;
     private final String name;
     private final T given;
-    private final Function1<T, IO<R>> when;
+    private final Function1<T, ? extends Kind<F, R>> when;
 
-    private ThenStep(String name, T given, Function1<T, IO<R>> when) {
+    private ThenStep(MonadDefer<F> monad, String name, T given, Function1<T, ? extends Kind<F, R>> when) {
+      this.monad = monad;
       this.name = name;
       this.given = given;
       this.when = when;
     }
 
-    public <E> TestCase<E, R> then(Either<Validator<Result<E>, Throwable>, Validator<Result<E>, R>> then) {
-      return new TestCaseImpl<>(name, IO.suspend(() -> when.apply(given)), then);
+    public <E> TestCase<F, E, R> then(Either<Validator<Result<E>, Throwable>, Validator<Result<E>, R>> then) {
+      return new TestCaseImpl<>(monad, name, monad.defer(() -> when.apply(given)), then);
     }
 
-    public <E> TestCase<E, R> thenOnSuccess(Validator<Result<E>, R> validator) {
+    public <E> TestCase<F, E, R> thenOnSuccess(Validator<Result<E>, R> validator) {
       return then(Either.right(validator));
     }
 
-    public <E> TestCase<E, R> thenOnFailure(Validator<Result<E>, Throwable> validator) {
+    public <E> TestCase<F, E, R> thenOnFailure(Validator<Result<E>, Throwable> validator) {
       return then(Either.left(validator));
     }
 
-    public <E> TestCase<E, R> thenMustBe(Validator<E, R> validator) {
+    public <E> TestCase<F, E, R> thenMustBe(Validator<E, R> validator) {
       return thenOnSuccess(validator.mapError(Result::of));
     }
 
-    public <E> TestCase<E, R> thenThrows(Validator<E, Throwable> validator) {
+    public <E> TestCase<F, E, R> thenThrows(Validator<E, Throwable> validator) {
       return thenOnFailure(validator.mapError(Result::of));
     }
   }
 }
 
-final class TestCaseImpl<E, T> implements SealedTestCase<E, T> {
+/**
+ * Implementation of the test case
+ * 
+ * @author tonivade
+ *
+ * @param <F> type of the test case
+ * @param <E> type of error generated
+ * @param <T> type of the result returned by the operation
+ */
+final class TestCaseImpl<F extends Witness, E, T> implements SealedTestCase<F, E, T> {
   
-  /**
-   * Name of the test case
-   */
   private final String name;
-
-  /**
-   * It describes the test to run
-   */
-  private final IO<TestResult<E, T>> test;
+  private final Kind<F, TestResult<E, T>> test;
+  private final MonadDefer<F> monad;
   
   /**
    * It will throw {@code IllegalArgumentException} if parameters are null or if name is a empty string
    * 
+   * @param monad monad instance for the type F
    * @param name name of the test case
    * @param when operation under test thar returns a value {@code T}
    * @param then Validation to apply to the result generated by operation
    */
-  protected TestCaseImpl(String name, IO<T> when, Either<Validator<Result<E>, Throwable>, Validator<Result<E>, T>> then) {
+  protected TestCaseImpl(MonadDefer<F> monad, String name, Kind<F, T> when, Either<Validator<Result<E>, Throwable>, Validator<Result<E>, T>> then) {
+    this.monad = checkNonNull(monad);
     checkNonNull(when);
     checkNonNull(then);
     this.name = checkNonEmpty(name);
-    this.test = when.attempt().map(t -> fold(name, t, then));
+    this.test = monad.map(monad.attempt(when), result -> fold(name, result, then));
   }
 
   /**
    * Private constructor used mainly for method decorators, like retry or repeat
    * 
+   * @param monad monad instance for the type F
    * @param name name of the test case
    * @param test test and validation to be executed
    */
-  private TestCaseImpl(String name, IO<TestResult<E, T>> test) {
+  private TestCaseImpl(MonadDefer<F> monad, String name, Kind<F, TestResult<E, T>> test) {
+    this.monad  = checkNonNull(monad);
     this.name = checkNonEmpty(name);
     this.test = checkNonNull(test);
   }
@@ -200,37 +213,41 @@ final class TestCaseImpl<E, T> implements SealedTestCase<E, T> {
    * @return the validation result
    */
   @Override
-  public IO<TestResult<E, T>> runIO() {
+  public Kind<F, TestResult<E, T>> run() {
     return test;
   }
 
   @Override
-  public TestCase<E, T> disable(String reason) {
-    return new TestCaseImpl<>(name, IO.pure(disabled(name, reason)));
+  public TestCase<F, E, T> disable(String reason) {
+    return new TestCaseImpl<>(monad, name, monad.pure(disabled(name, reason)));
   }
 
   @Override
-  public TestCase<E, Tuple2<Duration, T>> timed() {
-    return new TestCaseImpl<>(name, test.timed().map(
-        tuple -> tuple.applyTo((duration, result) -> result.map(value -> Tuple.of(duration, value)))));
+  public TestCase<F, E, Tuple2<Duration, T>> timed() {
+//    return new TestCaseImpl<>(monad, scheduleOfF, name, test.timed().map(
+//        tuple -> tuple.applyTo((duration, result) -> result.map(value -> Tuple.of(duration, value)))));
+    throw new UnsupportedOperationException("not implemented");
   }
 
   @Override
-  public TestCase<E, T> retryOnFailure(int times) {
-    return new TestCaseImpl<>(name, test.flatMap(result -> result.isFailure() ? test.retry(times) : IO.pure(result)));
+  public TestCase<F, E, T> retryOnFailure(int times) {
+    return new TestCaseImpl<>(monad, name, 
+      monad.flatMap(test, result -> result.isFailure() ? monad.retry(test, monad.scheduleOf().recurs(times)) : monad.pure(result)));
   }
 
   @Override
-  public TestCase<E, T> retryOnError(int times) {
-    return new TestCaseImpl<>(name, test.flatMap(result -> result.isError() ? test.retry(times) : IO.pure(result)));
+  public TestCase<F, E, T> retryOnError(int times) {
+    return new TestCaseImpl<>(monad, name, 
+      monad.flatMap(test, result -> result.isError() ? monad.retry(test, monad.scheduleOf().recurs(times)) : monad.pure(result)));
   }
 
   @Override
-  public TestCase<E, T> repeat(int times) {
-    return new TestCaseImpl<>(name, test.repeat(times));
+  public TestCase<F, E, T> repeat(int times) {
+    return new TestCaseImpl<>(monad, name, 
+      monad.repeat(test, monad.scheduleOf().<TestResult<E, T>>recurs(times).zipRight(monad.scheduleOf().identity())));
   }
 
-  private static <E, T> TestResult<E, T> fold(String name, Try<T> result, Either<Validator<Result<E>, Throwable>, Validator<Result<E>, T>> then) {
+  private static <E, T> TestResult<E, T> fold(String name, Either<Throwable, T> result, Either<Validator<Result<E>, Throwable>, Validator<Result<E>, T>> then) {
     return then.fold(
 
         onFailure -> result.fold(

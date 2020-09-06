@@ -4,7 +4,7 @@
  */
 package com.github.tonivade.purecheck;
 
-import static com.github.tonivade.purecheck.TestSuite.suite;
+import static com.github.tonivade.purecheck.TestSuite.suiteUIO;
 import static com.github.tonivade.purefun.Validator.equalsTo;
 import static com.github.tonivade.purefun.Validator.instanceOf;
 import static com.github.tonivade.purefun.Validator.notEqualsTo;
@@ -15,12 +15,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
+import com.github.tonivade.purecheck.spec.UIOTestSpec;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyString;
+import com.github.tonivade.purefun.effect.UIO_;
 
-public class NonEmptyStringTest extends TestSpec {
+class NonEmptyStringTest extends UIOTestSpec {
 
-  private final TestSuite<String> suite = suite("NonEmptyString",
+  private final TestSuite<UIO_, String> suite = suiteUIO("NonEmptyString",
 
       it.should("not accept null")
           .<String>givenNull()
@@ -59,7 +61,7 @@ public class NonEmptyStringTest extends TestSpec {
   );
 
   @Test
-  public void junit5() {
+  void junit5() {
     assertAll(
         () -> assertThrows(IllegalArgumentException.class, () -> NonEmptyString.of(null)),
         () -> assertThrows(IllegalArgumentException.class, () -> NonEmptyString.of("")),
@@ -72,7 +74,7 @@ public class NonEmptyStringTest extends TestSpec {
   }
 
   @Test
-  public void serial() {
+  void serial() {
     TestReport<String> run = suite.run();
 
     run.assertion();
@@ -81,7 +83,7 @@ public class NonEmptyStringTest extends TestSpec {
   }
 
   @Test
-  public void parallel() {
+  void parallel() {
     suite.parRun(Future.DEFAULT_EXECUTOR).await().onSuccess(TestReport::assertion);
   }
 }

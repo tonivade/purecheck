@@ -4,19 +4,18 @@
  */
 package com.github.tonivade.purecheck;
 
-public interface TestFactory {
+import com.github.tonivade.purefun.Witness;
+import com.github.tonivade.purefun.typeclasses.MonadDefer;
+
+public interface TestFactory<F extends Witness> {
   
-  static TestFactory factory() {
-    return TestFactoryModule.INSTANCE;
+  static <F extends Witness> TestFactory<F> factory(MonadDefer<F> monad) {
+    return () -> monad;
   }
-
-  default TestCase.GivenStep should(String name) {
-    return TestCase.test(name);
-  }
-}
-
-interface TestFactoryModule {
-
-  TestFactory INSTANCE = new TestFactory() { };
   
+  MonadDefer<F> monad();
+
+  default TestCase.GivenStep<F> should(String name) {
+    return TestCase.test(monad(), name);
+  }
 }
