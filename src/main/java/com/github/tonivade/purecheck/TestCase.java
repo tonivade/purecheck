@@ -99,11 +99,11 @@ public interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, E, T> {
       this.given = given;
     }
 
-    public <R> ThenStep<F, T, R> run(Function1<T, ? extends Kind<F, R>> when) {
+    public <R> ThenStep<F, T, R> run(Function1<? super T, ? extends Kind<F, R>> when) {
       return new ThenStep<>(monad, name, given, when);
     }
 
-    public <R> ThenStep<F, T, R> when(Function1<T, R> when) {
+    public <R> ThenStep<F, T, R> when(Function1<? super T, ? extends R> when) {
       return run(when.liftTry().andThen(result -> result.fold(monad::raiseError, monad::pure)));
     }
 
@@ -129,9 +129,9 @@ public interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, E, T> {
     private final MonadDefer<F> monad;
     private final String name;
     private final T given;
-    private final Function1<T, ? extends Kind<F, R>> when;
+    private final Function1<? super T, ? extends Kind<F, R>> when;
 
-    private ThenStep(MonadDefer<F> monad, String name, T given, Function1<T, ? extends Kind<F, R>> when) {
+    private ThenStep(MonadDefer<F> monad, String name, T given, Function1<? super T, ? extends Kind<F, R>> when) {
       this.monad = monad;
       this.name = name;
       this.given = given;
