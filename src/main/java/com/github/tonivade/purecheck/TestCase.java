@@ -55,7 +55,9 @@ public interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, E, T> {
   /**
    * It returns a builder to create a new test case
    *
+   * @param monad monad instance for F
    * @param name name of the test case
+   * @param <F> type of the test case
    * @return a new test case
    */
   static <F extends Witness> GivenStep<F> test(MonadDefer<F> monad, String name) {

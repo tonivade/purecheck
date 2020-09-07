@@ -4,7 +4,6 @@
  */
 package com.github.tonivade.purecheck;
 
-import static com.github.tonivade.purecheck.TestSuite.suiteIO;
 import static com.github.tonivade.purefun.Function1.identity;
 import static com.github.tonivade.purefun.Validator.endsWith;
 import static com.github.tonivade.purefun.Validator.equalsTo;
@@ -35,7 +34,7 @@ class HelloTest extends IOTestSpec {
   @Test
   void testHello() {
     Try<TestReport<String>> result =
-        suiteIO("some tests suite",
+        suite("some tests suite",
 
             it.should("say hello")
               .given("Toni")
@@ -67,7 +66,7 @@ class HelloTest extends IOTestSpec {
 
   @Test
   void testOnError() {
-    TestReport<String> result = suiteIO("some tests suite", 
+    TestReport<String> result = suite("some tests suite", 
         it.should("check if it fails")
           .noGiven()
           .when(error())
@@ -84,7 +83,7 @@ class HelloTest extends IOTestSpec {
     when(task.unsafeRunSync()).thenReturn("Hello Toni");
     
     TestReport<String> result =
-        suiteIO("some tests suite",
+        suite("some tests suite",
             it.should("reapeat")
               .given(task)
               .run(identity())
@@ -102,7 +101,7 @@ class HelloTest extends IOTestSpec {
         .thenReturn("Hello Toni");
 
     TestReport<String> result =
-        suiteIO("some tests suite",
+        suite("some tests suite",
             it.should("retry on error")
                 .given(task)
                 .run(identity())
@@ -121,7 +120,7 @@ class HelloTest extends IOTestSpec {
       .thenReturn("Hello Toni");
     
     TestReport<String> result =
-        suiteIO("some tests suite",
+        suite("some tests suite",
             it.should("retry on error")
               .given(task)
               .run(identity())
@@ -139,7 +138,7 @@ class HelloTest extends IOTestSpec {
         .thenReturn("Hello Toni");
 
     TestReport<String> result =
-        suiteIO("some tests suite",
+        suite("some tests suite",
             it.should("retry on failure")
                 .given(task)
                 .run(identity())
@@ -158,7 +157,7 @@ class HelloTest extends IOTestSpec {
       .thenReturn("Hello Toni");
     
     TestReport<String> result =
-        suiteIO("some tests suite",
+        suite("some tests suite",
             it.should("retry on failure")
               .given(task)
               .run(identity())
@@ -174,7 +173,7 @@ class HelloTest extends IOTestSpec {
   @Disabled("not implemented yet")
   void timed() {
     TestReport<String> result =
-        suiteIO("some tests suite",
+        suite("some tests suite",
             it.should("timed")
               .given("Hello Toni")
               .when(identity())

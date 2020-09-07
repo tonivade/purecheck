@@ -4,7 +4,6 @@
  */
 package com.github.tonivade.purecheck;
 
-import static com.github.tonivade.purecheck.TestSuite.suiteUIO;
 import static com.github.tonivade.purefun.Validator.equalsTo;
 import static com.github.tonivade.purefun.Validator.instanceOf;
 import static com.github.tonivade.purefun.Validator.notEqualsTo;
@@ -22,7 +21,7 @@ import com.github.tonivade.purefun.effect.UIO_;
 
 class NonEmptyStringTest extends UIOTestSpec {
 
-  private final TestSuite<UIO_, String> suite = suiteUIO("NonEmptyString",
+  private final TestSuite<UIO_, String> suite = suite("NonEmptyString",
 
       it.should("not accept null")
           .<String>givenNull()
