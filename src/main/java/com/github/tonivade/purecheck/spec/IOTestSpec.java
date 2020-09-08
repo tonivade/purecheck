@@ -27,7 +27,7 @@ public abstract class IOTestSpec {
   protected final TestFactory<IO_> it = TestFactory.factory(IOInstances.monadDefer());
   
   @SafeVarargs
-  public static <E> TestSuite<IO_, E> suite(
+  protected final <E> TestSuite<IO_, E> suite(
       String name, TestCase<IO_, E, ?> test, TestCase<IO_, E, ?>... tests) {
     return new TestSuite<IO_, E>(IOInstances.monad(), name, NonEmptyList.of(test, tests)) {
       @Override

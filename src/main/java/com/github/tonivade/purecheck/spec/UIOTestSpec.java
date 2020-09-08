@@ -27,7 +27,7 @@ public abstract class UIOTestSpec {
   protected final TestFactory<UIO_> it = TestFactory.factory(UIOInstances.monadDefer());
   
   @SafeVarargs
-  public static <E> TestSuite<UIO_, E> suite(
+  protected final <E> TestSuite<UIO_, E> suite(
       String name, TestCase<UIO_, E, ?> test, TestCase<UIO_, E, ?>... tests) {
     return new TestSuite<UIO_, E>(UIOInstances.monad(), name, NonEmptyList.of(test, tests)) {
       @Override
