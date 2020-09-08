@@ -63,7 +63,7 @@ modifyPom {
   project {
     name 'PureCheck'
     description 'Pure Functional Testing Library'
-    url 'https://github.com/tonivade/purecfg'
+    url 'https://github.com/tonivade/purecheck'
     inceptionYear '2020'
 
     scm {

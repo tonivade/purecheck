@@ -37,7 +37,7 @@ public abstract class TaskTestSpec {
       
       @Override
       public Future<TestReport<E>> parRun(Executor executor) {
-        return runK().fix(toTask()).foldMap(FutureInstances.monadDefer()).fix(toFuture());
+        return runK().fix(toTask()).foldMap(FutureInstances.async()).fix(toFuture());
       }
     };
   }

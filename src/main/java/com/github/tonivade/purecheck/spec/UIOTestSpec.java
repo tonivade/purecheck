@@ -37,7 +37,7 @@ public abstract class UIOTestSpec {
       
       @Override
       public Future<TestReport<E>> parRun(Executor executor) {
-        return runK().fix(toUIO()).foldMap(FutureInstances.monadDefer()).fix(toFuture());
+        return runK().fix(toUIO()).foldMap(FutureInstances.async()).fix(toFuture());
       }
     };
   }

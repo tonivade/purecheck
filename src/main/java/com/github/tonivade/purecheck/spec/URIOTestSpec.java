@@ -38,7 +38,7 @@ public abstract class URIOTestSpec<R> {
       
       @Override
       public Future<TestReport<E>> parRun(Executor executor) {
-        return runK().fix(toURIO()).foldMap(env, FutureInstances.monadDefer()).fix(toFuture());
+        return runK().fix(toURIO()).foldMap(env, FutureInstances.async()).fix(toFuture());
       }
     };
   }

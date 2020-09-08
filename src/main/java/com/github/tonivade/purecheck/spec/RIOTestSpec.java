@@ -38,7 +38,7 @@ public abstract class RIOTestSpec<R> {
       
       @Override
       public Future<TestReport<E>> parRun(Executor executor) {
-        return runK().fix(toRIO()).foldMap(env, FutureInstances.monadDefer()).fix(toFuture());
+        return runK().fix(toRIO()).foldMap(env, FutureInstances.async()).fix(toFuture());
       }
     };
   }
