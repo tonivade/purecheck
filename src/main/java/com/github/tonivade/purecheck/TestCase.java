@@ -18,6 +18,7 @@ import com.github.tonivade.purefun.Function1;
 import com.github.tonivade.purefun.HigherKind;
 import com.github.tonivade.purefun.Kind;
 import com.github.tonivade.purefun.Producer;
+import com.github.tonivade.purefun.Tuple;
 import com.github.tonivade.purefun.Tuple2;
 import com.github.tonivade.purefun.Validator;
 import com.github.tonivade.purefun.Witness;
@@ -226,9 +227,8 @@ final class TestCaseImpl<F extends Witness, E, T> implements SealedTestCase<F, E
 
   @Override
   public TestCase<F, E, Tuple2<Duration, T>> timed() {
-//    return new TestCaseImpl<>(monad, scheduleOfF, name, test.timed().map(
-//        tuple -> tuple.applyTo((duration, result) -> result.map(value -> Tuple.of(duration, value)))));
-    throw new UnsupportedOperationException("not implemented");
+    return new TestCaseImpl<>(monad, name, monad.map(monad.timed(test),
+        tuple -> tuple.applyTo((duration, result) -> result.map(value -> Tuple.of(duration, value)))));
   }
 
   @Override
