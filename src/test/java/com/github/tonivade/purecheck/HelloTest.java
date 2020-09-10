@@ -175,8 +175,8 @@ class HelloTest extends IOTestSpec {
     TestReport<String> result =
         suite("some tests suite",
             it.should("timed")
-              .given("Hello Toni")
-              .when(identity())
+              .given("Toni")
+              .run(name -> hello(name))
               .thenMustBe(equalsTo("Hello Toni")).timed()
             ).run();
 

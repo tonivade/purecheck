@@ -44,6 +44,11 @@ public abstract class TestSuite<F extends Witness, E> {
     this.tests = checkNonNull(tests);
   }
 
+  /**
+   * It runs the suite in the given effect of the test and creates a test results
+   * 
+   * @return the result of the suite
+   */
   public Kind<F, TestReport<E>> runK() {
     Kind<F, Sequence<TestResult<E, ?>>> results = traverse(tests.map(TestCase::run));
 
@@ -58,10 +63,19 @@ public abstract class TestSuite<F extends Witness, E> {
   public abstract TestReport<E> run();
 
   /**
+   * It runs the suite in parallel using the default executor
+   * 
+   * @return a future with the result of the suite
+   */
+  public Future<TestReport<E>> parRun() {
+    return parRun(Future.DEFAULT_EXECUTOR);
+  }
+
+  /**
    * It runs the suite in parallel using the given {@code Executor}
    * 
    * @param executor executor on which the suite is going to be executed
-   * @return a promise with the result of the suite
+   * @return a future with the result of the suite
    */
   public abstract Future<TestReport<E>> parRun(Executor executor);
 
