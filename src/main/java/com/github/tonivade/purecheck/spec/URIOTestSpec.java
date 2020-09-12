@@ -4,14 +4,17 @@
  */
 package com.github.tonivade.purecheck.spec;
 
+import static com.github.tonivade.purefun.Precondition.checkNonNull;
 import static com.github.tonivade.purefun.concurrent.FutureOf.toFuture;
 import static com.github.tonivade.purefun.effect.URIOOf.toURIO;
+
 import java.util.concurrent.Executor;
+
 import com.github.tonivade.purecheck.TestCase;
 import com.github.tonivade.purecheck.TestFactory;
-import com.github.tonivade.purecheck.TestReport;
 import com.github.tonivade.purecheck.TestSuite;
 import com.github.tonivade.purefun.Kind;
+import com.github.tonivade.purefun.Producer;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyList;
 import com.github.tonivade.purefun.effect.URIO_;
@@ -23,22 +26,29 @@ import com.github.tonivade.purefun.instances.URIOInstances;
  *
  * @author tonivade
  */
-public abstract class URIOTestSpec<R> {
+public abstract class URIOTestSpec<R> implements TestSpec<Kind<URIO_, R>> {
 
   protected final TestFactory<Kind<URIO_, R>> it = TestFactory.factory(URIOInstances.monadDefer());
   
+  private final Producer<R> factory;
+  
+  public URIOTestSpec(Producer<R> factory) {
+    this.factory = checkNonNull(factory);
+  }
+  
+  @Override
   @SafeVarargs
-  protected final <E> TestSuite<Kind<URIO_, R>, E> suite(
-      R env, String name, TestCase<Kind<URIO_, R>, E, ?> test, TestCase<Kind<URIO_, R>, E, ?>... tests) {
+  public final <E> TestSuite<Kind<URIO_, R>, E> suite(
+      String name, TestCase<Kind<URIO_, R>, E, ?> test, TestCase<Kind<URIO_, R>, E, ?>... tests) {
     return new TestSuite<Kind<URIO_, R>, E>(URIOInstances.monad(), name, NonEmptyList.of(test, tests)) {
       @Override
-      public TestReport<E> run() {
-        return runK().fix(toURIO()).unsafeRunSync(env);
+      public Report<E> run() {
+        return runK().fix(toURIO()).unsafeRunSync(factory.get());
       }
       
       @Override
-      public Future<TestReport<E>> parRun(Executor executor) {
-        return runK().fix(toURIO()).foldMap(env, FutureInstances.async()).fix(toFuture());
+      public Future<Report<E>> parRun(Executor executor) {
+        return runK().fix(toURIO()).foldMap(factory.get(), FutureInstances.async()).fix(toFuture());
       }
     };
   }

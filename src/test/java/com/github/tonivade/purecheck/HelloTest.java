@@ -34,7 +34,7 @@ class HelloTest extends IOTestSpec {
 
   @Test
   void testHello() {
-    Try<TestReport<String>> result =
+    Try<TestSuite.Report<String>> result =
         suite("some tests suite",
 
             it.should("say hello")
@@ -67,7 +67,7 @@ class HelloTest extends IOTestSpec {
 
   @Test
   void testOnError() {
-    TestReport<String> result = suite("some tests suite", 
+    TestSuite.Report<String> result = suite("some tests suite", 
         it.should("check if it fails")
           .noGiven()
           .when(error())
@@ -83,7 +83,7 @@ class HelloTest extends IOTestSpec {
   void repeat(@Mock IO<String> task) {
     when(task.unsafeRunSync()).thenReturn("Hello Toni");
     
-    TestReport<String> result =
+    TestSuite.Report<String> result =
         suite("some tests suite",
             it.should("reapeat")
               .given(task)
@@ -101,7 +101,7 @@ class HelloTest extends IOTestSpec {
     when(task.unsafeRunSync())
         .thenReturn("Hello Toni");
 
-    TestReport<String> result =
+    TestSuite.Report<String> result =
         suite("some tests suite",
             it.should("retry on error")
                 .given(task)
@@ -120,7 +120,7 @@ class HelloTest extends IOTestSpec {
       .thenThrow(RuntimeException.class)
       .thenReturn("Hello Toni");
     
-    TestReport<String> result =
+    TestSuite.Report<String> result =
         suite("some tests suite",
             it.should("retry on error")
               .given(task)
@@ -138,7 +138,7 @@ class HelloTest extends IOTestSpec {
     when(task.unsafeRunSync())
         .thenReturn("Hello Toni");
 
-    TestReport<String> result =
+    TestSuite.Report<String> result =
         suite("some tests suite",
             it.should("retry on failure")
                 .given(task)
@@ -157,7 +157,7 @@ class HelloTest extends IOTestSpec {
       .thenReturn("Hello World")
       .thenReturn("Hello Toni");
     
-    TestReport<String> result =
+    TestSuite.Report<String> result =
         suite("some tests suite",
             it.should("retry on failure")
               .given(task)
@@ -172,7 +172,7 @@ class HelloTest extends IOTestSpec {
   
   @Test
   void timed() {
-    TestReport<String> result =
+    TestSuite.Report<String> result =
         suite("some tests suite",
             it.should("timed")
               .given("Toni")

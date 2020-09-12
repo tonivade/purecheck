@@ -6,10 +6,11 @@ package com.github.tonivade.purecheck.spec;
 
 import static com.github.tonivade.purefun.concurrent.FutureOf.toFuture;
 import static com.github.tonivade.purefun.monad.IOOf.toIO;
+
 import java.util.concurrent.Executor;
+
 import com.github.tonivade.purecheck.TestCase;
 import com.github.tonivade.purecheck.TestFactory;
-import com.github.tonivade.purecheck.TestReport;
 import com.github.tonivade.purecheck.TestSuite;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyList;
@@ -22,21 +23,22 @@ import com.github.tonivade.purefun.monad.IO_;
  *
  * @author tonivade
  */
-public abstract class IOTestSpec {
+public abstract class IOTestSpec implements TestSpec<IO_> {
 
   protected final TestFactory<IO_> it = TestFactory.factory(IOInstances.monadDefer());
   
+  @Override
   @SafeVarargs
-  protected final <E> TestSuite<IO_, E> suite(
+  public final <E> TestSuite<IO_, E> suite(
       String name, TestCase<IO_, E, ?> test, TestCase<IO_, E, ?>... tests) {
     return new TestSuite<IO_, E>(IOInstances.monad(), name, NonEmptyList.of(test, tests)) {
       @Override
-      public TestReport<E> run() {
+      public Report<E> run() {
         return runK().fix(toIO()).unsafeRunSync();
       }
       
       @Override
-      public Future<TestReport<E>> parRun(Executor executor) {
+      public Future<Report<E>> parRun(Executor executor) {
         return runK().fix(toIO()).foldMap(FutureInstances.async()).fix(toFuture());
       }
     };
