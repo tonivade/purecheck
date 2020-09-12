@@ -81,6 +81,6 @@ public abstract class TestSuite<F extends Witness, E> {
 
   private <T> Kind<F, Sequence<T>> traverse(Sequence<Kind<F, ? extends T>> list) {
     return list.foldLeft(applicative.pure(empty()), 
-        (xs, a) -> applicative.map2(xs, a, (l, e) -> l.append(e)));
+        (xs, a) -> applicative.mapN(xs, a, (l, e) -> l.append(e)));
   }
 }
