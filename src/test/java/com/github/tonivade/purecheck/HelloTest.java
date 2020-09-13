@@ -30,7 +30,7 @@ import com.github.tonivade.purefun.monad.IO;
 import com.github.tonivade.purefun.type.Try;
 
 @ExtendWith(MockitoExtension.class)
-class HelloTest extends IOTestSpec {
+class HelloTest extends IOTestSpec<String> {
 
   @Test
   void testHello() {

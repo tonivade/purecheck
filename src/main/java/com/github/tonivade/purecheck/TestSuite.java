@@ -14,6 +14,9 @@ import com.github.tonivade.purefun.Witness;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyList;
 import com.github.tonivade.purefun.data.Sequence;
+import com.github.tonivade.purefun.data.SequenceOf;
+import com.github.tonivade.purefun.data.Sequence_;
+import com.github.tonivade.purefun.instances.SequenceInstances;
 import com.github.tonivade.purefun.typeclasses.Applicative;
 
 /**
@@ -30,7 +33,7 @@ public abstract class TestSuite<F extends Witness, E> {
 
   private final Applicative<F> applicative;
   private final String name;
-  private final NonEmptyList<TestCase<F, E, ?>> tests;
+  private final Sequence<TestCase<F, E, ?>> tests;
   
   /**
    * It will throw {@code NullPointerException} if the tests is null
@@ -51,7 +54,10 @@ public abstract class TestSuite<F extends Witness, E> {
    * @return the result of the suite
    */
   public Kind<F, Report<E>> runK() {
-    Kind<F, Sequence<TestResult<E, ?>>> results = applicative.traverse(tests.map(TestCase::run));
+    Kind<F, Kind<Sequence_, TestResult<E, ?>>> sequence = 
+        SequenceInstances.traverse().sequence(applicative, tests.map(TestCase::run));
+
+    Kind<F, Sequence<TestResult<E, ?>>> results = applicative.map(sequence, SequenceOf::narrowK);
 
     return applicative.map(results, xs -> new Report<>(name, xs));
   }
@@ -103,7 +109,7 @@ public abstract class TestSuite<F extends Witness, E> {
 
     @Override
     public String toString() {
-      return results.join("\n  - ", name + " {\n  - ", "\n}");
+      return results.join("\n- ", "## " + name + "\n\n- ", "\n");
     }
   }
 }

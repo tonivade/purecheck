@@ -9,6 +9,7 @@ import static com.github.tonivade.purefun.monad.IOOf.toIO;
 
 import java.util.concurrent.Executor;
 
+import com.github.tonivade.purecheck.PureCheck;
 import com.github.tonivade.purecheck.TestCase;
 import com.github.tonivade.purecheck.TestFactory;
 import com.github.tonivade.purecheck.TestSuite;
@@ -23,23 +24,38 @@ import com.github.tonivade.purefun.monad.IO_;
  *
  * @author tonivade
  */
-public abstract class IOTestSpec implements TestSpec<IO_> {
+public abstract class IOTestSpec<E> {
 
   protected final TestFactory<IO_> it = TestFactory.factory(IOInstances.monadDefer());
   
-  @Override
   @SafeVarargs
-  public final <E> TestSuite<IO_, E> suite(
+  protected final TestSuite<IO_, E> suite(
       String name, TestCase<IO_, E, ?> test, TestCase<IO_, E, ?>... tests) {
     return new TestSuite<IO_, E>(IOInstances.monad(), name, NonEmptyList.of(test, tests)) {
       @Override
-      public Report<E> run() {
+      public TestSuite.Report<E> run() {
         return runK().fix(toIO()).unsafeRunSync();
       }
       
       @Override
-      public Future<Report<E>> parRun(Executor executor) {
-        return runK().fix(toIO()).foldMap(FutureInstances.async()).fix(toFuture());
+      public Future<TestSuite.Report<E>> parRun(Executor executor) {
+        return runK().fix(toIO()).foldMap(FutureInstances.async(executor)).fix(toFuture());
+      }
+    };
+  }
+  
+  @SafeVarargs
+  protected final PureCheck<IO_, E> pureCheck(
+      String name, TestSuite<IO_, E> suite, TestSuite<IO_, E>... suites) {
+    return new PureCheck<IO_, E>(IOInstances.monad(), name, NonEmptyList.of(suite, suites)) {
+      @Override
+      public PureCheck.Report<E> run() {
+        return runK().fix(toIO()).unsafeRunSync();
+      }
+      
+      @Override
+      public Future<PureCheck.Report<E>> parRun(Executor executor) {
+        return runK().fix(toIO()).foldMap(FutureInstances.async(executor)).fix(toFuture());
       }
     };
   }

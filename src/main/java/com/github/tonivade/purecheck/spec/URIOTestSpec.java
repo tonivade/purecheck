@@ -10,6 +10,7 @@ import static com.github.tonivade.purefun.effect.URIOOf.toURIO;
 
 import java.util.concurrent.Executor;
 
+import com.github.tonivade.purecheck.PureCheck;
 import com.github.tonivade.purecheck.TestCase;
 import com.github.tonivade.purecheck.TestFactory;
 import com.github.tonivade.purecheck.TestSuite;
@@ -26,7 +27,7 @@ import com.github.tonivade.purefun.instances.URIOInstances;
  *
  * @author tonivade
  */
-public abstract class URIOTestSpec<R> implements TestSpec<Kind<URIO_, R>> {
+public abstract class URIOTestSpec<R, E> {
 
   protected final TestFactory<Kind<URIO_, R>> it = TestFactory.factory(URIOInstances.monadDefer());
   
@@ -36,9 +37,8 @@ public abstract class URIOTestSpec<R> implements TestSpec<Kind<URIO_, R>> {
     this.factory = checkNonNull(factory);
   }
   
-  @Override
   @SafeVarargs
-  public final <E> TestSuite<Kind<URIO_, R>, E> suite(
+  protected final TestSuite<Kind<URIO_, R>, E> suite(
       String name, TestCase<Kind<URIO_, R>, E, ?> test, TestCase<Kind<URIO_, R>, E, ?>... tests) {
     return new TestSuite<Kind<URIO_, R>, E>(URIOInstances.monad(), name, NonEmptyList.of(test, tests)) {
       @Override
@@ -49,6 +49,22 @@ public abstract class URIOTestSpec<R> implements TestSpec<Kind<URIO_, R>> {
       @Override
       public Future<Report<E>> parRun(Executor executor) {
         return runK().fix(toURIO()).foldMap(factory.get(), FutureInstances.async()).fix(toFuture());
+      }
+    };
+  }
+  
+  @SafeVarargs
+  protected final PureCheck<Kind<URIO_, R>, E> pureCheck(
+      String name, TestSuite<Kind<URIO_, R>, E> suite, TestSuite<Kind<URIO_, R>, E>... suites) {
+    return new PureCheck<Kind<URIO_, R>, E>(URIOInstances.monad(), name, NonEmptyList.of(suite, suites)) {
+      @Override
+      public PureCheck.Report<E> run() {
+        return runK().fix(toURIO()).safeRunSync(factory.get()).get();
+      }
+      
+      @Override
+      public Future<PureCheck.Report<E>> parRun(Executor executor) {
+        return runK().fix(toURIO()).foldMap(factory.get(), FutureInstances.async(executor)).fix(toFuture());
       }
     };
   }

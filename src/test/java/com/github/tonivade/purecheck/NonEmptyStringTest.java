@@ -18,7 +18,7 @@ import com.github.tonivade.purecheck.spec.UIOTestSpec;
 import com.github.tonivade.purefun.data.NonEmptyString;
 import com.github.tonivade.purefun.effect.UIO_;
 
-class NonEmptyStringTest extends UIOTestSpec {
+class NonEmptyStringTest extends UIOTestSpec<String> {
 
   private final TestSuite<UIO_, String> suite = suite("NonEmptyString",
 

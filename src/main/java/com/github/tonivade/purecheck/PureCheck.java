@@ -7,11 +7,16 @@ package com.github.tonivade.purecheck;
 import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
 
+import java.util.concurrent.Executor;
+
 import com.github.tonivade.purefun.Kind;
 import com.github.tonivade.purefun.Witness;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyList;
 import com.github.tonivade.purefun.data.Sequence;
+import com.github.tonivade.purefun.data.SequenceOf;
+import com.github.tonivade.purefun.data.Sequence_;
+import com.github.tonivade.purefun.instances.SequenceInstances;
 import com.github.tonivade.purefun.typeclasses.Applicative;
 
 public abstract class PureCheck<F extends Witness, E> {
@@ -27,12 +32,21 @@ public abstract class PureCheck<F extends Witness, E> {
   }
   
   public Kind<F, Report<E>> runK() {
-    Kind<F, Sequence<TestSuite.Report<E>>> traverse = applicative.traverse(suites.map(TestSuite::runK));
-    return applicative.map(traverse, xs -> new PureCheck.Report<>(name, xs));
+    Kind<F, Kind<Sequence_, TestSuite.Report<E>>> sequence = 
+        SequenceInstances.traverse().sequence(applicative, suites.map(TestSuite::runK));
+    
+    Kind<F, Sequence<TestSuite.Report<E>>> results = applicative.map(sequence, SequenceOf::narrowK);
+    
+    return applicative.map(results, xs -> new PureCheck.Report<>(name, xs));
   }
   
   public abstract Report<E> run();
-  public abstract Future<Report<E>> parRun();
+
+  public abstract Future<Report<E>> parRun(Executor executor);
+
+  public Future<Report<E>> parRun() {
+    return parRun(Future.DEFAULT_EXECUTOR);
+  }
 
   public static class Report<E> {
 
@@ -44,9 +58,17 @@ public abstract class PureCheck<F extends Witness, E> {
       this.reports = checkNonNull(reports);
     }
 
+    public void assertion() {
+      try {
+        reports.forEach(TestSuite.Report::assertion);
+      } finally {
+        System.out.println(this);
+      }
+    }
+
     @Override
     public String toString() {
-      return reports.join("\n  - ", name + " {\n  - ", "\n}");
+      return reports.join("\n\n", "# " + name + "\n\n", "\n");
     }
   }
 }

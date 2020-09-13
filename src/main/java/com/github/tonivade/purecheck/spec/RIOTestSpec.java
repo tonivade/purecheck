@@ -10,6 +10,7 @@ import static com.github.tonivade.purefun.effect.RIOOf.toRIO;
 
 import java.util.concurrent.Executor;
 
+import com.github.tonivade.purecheck.PureCheck;
 import com.github.tonivade.purecheck.TestCase;
 import com.github.tonivade.purecheck.TestFactory;
 import com.github.tonivade.purecheck.TestSuite;
@@ -26,7 +27,7 @@ import com.github.tonivade.purefun.instances.RIOInstances;
  *
  * @author tonivade
  */
-public abstract class RIOTestSpec<R> implements TestSpec<Kind<RIO_, R>> {
+public abstract class RIOTestSpec<R, E> {
 
   protected final TestFactory<Kind<RIO_, R>> it = TestFactory.factory(RIOInstances.monadDefer());
   
@@ -36,9 +37,8 @@ public abstract class RIOTestSpec<R> implements TestSpec<Kind<RIO_, R>> {
     this.factory = checkNonNull(factory);
   }
   
-  @Override
   @SafeVarargs
-  public final <E> TestSuite<Kind<RIO_, R>, E> suite(
+  protected final TestSuite<Kind<RIO_, R>, E> suite(
       String name, TestCase<Kind<RIO_, R>, E, ?> test, TestCase<Kind<RIO_, R>, E, ?>... tests) {
     return new TestSuite<Kind<RIO_, R>, E>(RIOInstances.monad(), name, NonEmptyList.of(test, tests)) {
       @Override
@@ -49,6 +49,22 @@ public abstract class RIOTestSpec<R> implements TestSpec<Kind<RIO_, R>> {
       @Override
       public Future<Report<E>> parRun(Executor executor) {
         return runK().fix(toRIO()).foldMap(factory.get(), FutureInstances.async()).fix(toFuture());
+      }
+    };
+  }
+  
+  @SafeVarargs
+  protected final PureCheck<Kind<RIO_, R>, E> pureCheck(
+      String name, TestSuite<Kind<RIO_, R>, E> suite, TestSuite<Kind<RIO_, R>, E>... suites) {
+    return new PureCheck<Kind<RIO_, R>, E>(RIOInstances.monad(), name, NonEmptyList.of(suite, suites)) {
+      @Override
+      public PureCheck.Report<E> run() {
+        return runK().fix(toRIO()).safeRunSync(factory.get()).get();
+      }
+      
+      @Override
+      public Future<PureCheck.Report<E>> parRun(Executor executor) {
+        return runK().fix(toRIO()).foldMap(factory.get(), FutureInstances.async(executor)).fix(toFuture());
       }
     };
   }
