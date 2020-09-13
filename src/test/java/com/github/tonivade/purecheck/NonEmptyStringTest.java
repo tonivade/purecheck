@@ -15,11 +15,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 
 import com.github.tonivade.purecheck.spec.UIOTestSpec;
-import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyString;
 import com.github.tonivade.purefun.effect.UIO_;
 
-class NonEmptyStringTest extends UIOTestSpec {
+class NonEmptyStringTest extends UIOTestSpec<String> {
 
   private final TestSuite<UIO_, String> suite = suite("NonEmptyString",
 
@@ -74,7 +73,7 @@ class NonEmptyStringTest extends UIOTestSpec {
 
   @Test
   void serial() {
-    TestReport<String> run = suite.run();
+    TestSuite.Report<String> run = suite.run();
 
     run.assertion();
     
@@ -83,6 +82,6 @@ class NonEmptyStringTest extends UIOTestSpec {
 
   @Test
   void parallel() {
-    suite.parRun(Future.DEFAULT_EXECUTOR).await().onSuccess(TestReport::assertion);
+    suite.parRun().await().onSuccess(TestSuite.Report::assertion);
   }
 }
