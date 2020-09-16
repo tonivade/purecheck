@@ -9,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-import com.github.tonivade.purecheck.spec.IOTestSpec;
-import com.github.tonivade.purefun.monad.IO_;
+import com.github.tonivade.purecheck.spec.TaskTestSpec;
+import com.github.tonivade.purefun.effect.Task_;
 
-public class PureCheckTest extends IOTestSpec<String> {
+public class PureCheckTest extends TaskTestSpec<String> {
   
   @Test
   void test() {
@@ -20,7 +20,7 @@ public class PureCheckTest extends IOTestSpec<String> {
         () -> pureCheck("test", hello(), bye()).run().assertion());
   }
   
-  TestSuite<IO_, String> hello() {
+  TestSuite<Task_, String> hello() {
     return suite("suite 1", 
         it.should("say hello")
           .given("Toni")
@@ -29,7 +29,7 @@ public class PureCheckTest extends IOTestSpec<String> {
         );
   }
   
-  TestSuite<IO_, String> bye() {
+  TestSuite<Task_, String> bye() {
     return suite("suite 2", 
         it.should("say goodbye")
           .given("Toni")
