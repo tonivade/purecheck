@@ -4,6 +4,7 @@
  */
 package com.github.tonivade.purecheck.spec;
 
+import com.github.tonivade.purecheck.TestSpec;
 import com.github.tonivade.purefun.instances.IOInstances;
 import com.github.tonivade.purefun.monad.IO_;
 import com.github.tonivade.purefun.runtimes.Runtime;

@@ -2,16 +2,12 @@
  * Copyright (c) 2020, Antonio Gabriel Muñoz Conejo <antoniogmc at gmail dot com>
  * Distributed under the terms of the MIT License
  */
-package com.github.tonivade.purecheck.spec;
+package com.github.tonivade.purecheck;
 
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
 
 import java.util.concurrent.Executor;
 
-import com.github.tonivade.purecheck.PureCheck;
-import com.github.tonivade.purecheck.TestCase;
-import com.github.tonivade.purecheck.TestFactory;
-import com.github.tonivade.purecheck.TestSuite;
 import com.github.tonivade.purefun.Witness;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyList;
