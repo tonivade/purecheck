@@ -18,6 +18,6 @@ import com.github.tonivade.purefun.runtimes.Runtime;
 public abstract class RIOTestSpec<R, E> extends TestSpec<Kind<RIO_, R>, E> {
   
   public RIOTestSpec(R env) {
-    super(Runtime.rio(env), RIOInstances.monadDefer());
+    super(Runtime.rio(env), RIOInstances.monadDefer(), RIOInstances.applicative());
   }
 }

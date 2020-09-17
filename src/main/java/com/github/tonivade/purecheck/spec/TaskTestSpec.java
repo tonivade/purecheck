@@ -17,6 +17,6 @@ import com.github.tonivade.purefun.runtimes.Runtime;
 public abstract class TaskTestSpec<E> extends TestSpec<Task_, E> {
 
   public TaskTestSpec() {
-    super(Runtime.task(), TaskInstances.monadDefer());
+    super(Runtime.task(), TaskInstances.monadDefer(), TaskInstances.applicative());
   }
 }

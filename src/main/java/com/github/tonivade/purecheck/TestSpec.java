@@ -12,6 +12,7 @@ import com.github.tonivade.purefun.Witness;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyList;
 import com.github.tonivade.purefun.runtimes.Runtime;
+import com.github.tonivade.purefun.typeclasses.Applicative;
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
 
 public abstract class TestSpec<F extends Witness, E> {
@@ -19,18 +20,18 @@ public abstract class TestSpec<F extends Witness, E> {
   protected final TestFactory<F> it;
   
   private final Runtime<F> runtime;
-  private final MonadDefer<F> monad;
+  private final Applicative<F> applicative;
 
-  public TestSpec(Runtime<F> runtime, MonadDefer<F> monad) {
+  public TestSpec(Runtime<F> runtime, MonadDefer<F> monad, Applicative<F> applicative) {
     this.runtime = checkNonNull(runtime);
-    this.monad = checkNonNull(monad);
+    this.applicative = checkNonNull(applicative);
     this.it = TestFactory.factory(monad);
   }
   
   @SafeVarargs
   protected final TestSuite<F, E> suite(
       String name, TestCase<F, E, ?> test, TestCase<F, E, ?>... tests) {
-    return new TestSuite<F, E>(monad, name, NonEmptyList.of(test, tests)) {
+    return new TestSuite<F, E>(applicative, name, NonEmptyList.of(test, tests)) {
       @Override
       public TestSuite.Report<E> run() {
         return runtime.run(runK());
@@ -46,7 +47,7 @@ public abstract class TestSpec<F extends Witness, E> {
   @SafeVarargs
   protected final PureCheck<F, E> pureCheck(
       String name, TestSuite<F, E> suite, TestSuite<F, E>... suites) {
-    return new PureCheck<F, E>(monad, name, NonEmptyList.of(suite, suites)) {
+    return new PureCheck<F, E>(applicative, name, NonEmptyList.of(suite, suites)) {
       @Override
       public PureCheck.Report<E> run() {
         return runtime.run(runK());

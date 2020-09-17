@@ -17,6 +17,6 @@ import com.github.tonivade.purefun.runtimes.Runtime;
 public abstract class IOTestSpec<E> extends TestSpec<IO_, E> {
 
   public IOTestSpec() {
-    super(Runtime.io(), IOInstances.monadDefer());
+    super(Runtime.io(), IOInstances.monadDefer(), IOInstances.applicative());
   }
 }

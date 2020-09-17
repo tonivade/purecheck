@@ -18,6 +18,6 @@ import com.github.tonivade.purefun.runtimes.Runtime;
 public abstract class URIOTestSpec<R, E> extends TestSpec<Kind<URIO_, R>, E> {
   
   public URIOTestSpec(R env) {
-    super(Runtime.urio(env), URIOInstances.monadDefer());
+    super(Runtime.urio(env), URIOInstances.monadDefer(), URIOInstances.applicative());
   }
 }

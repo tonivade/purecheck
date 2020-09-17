@@ -17,6 +17,6 @@ import com.github.tonivade.purefun.runtimes.Runtime;
 public abstract class UIOTestSpec<E> extends TestSpec<UIO_, E> {
 
   public UIOTestSpec() {
-    super(Runtime.uio(), UIOInstances.monadDefer());
+    super(Runtime.uio(), UIOInstances.monadDefer(), UIOInstances.applicative());
   }
 }
