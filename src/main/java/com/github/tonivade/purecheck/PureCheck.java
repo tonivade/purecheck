@@ -17,27 +17,27 @@ import com.github.tonivade.purefun.data.Sequence;
 import com.github.tonivade.purefun.data.SequenceOf;
 import com.github.tonivade.purefun.data.Sequence_;
 import com.github.tonivade.purefun.instances.SequenceInstances;
-import com.github.tonivade.purefun.typeclasses.Applicative;
+import com.github.tonivade.purefun.typeclasses.Parallel;
 
 public abstract class PureCheck<F extends Witness, E> {
   
-  private final Applicative<F> applicative;
+  private final Parallel<F, F> parallel;
   private final String name;
   private final NonEmptyList<TestSuite<F, E>> suites;
   
-  public PureCheck(Applicative<F> applicative, String name, NonEmptyList<TestSuite<F, E>> suites) {
-    this.applicative = checkNonNull(applicative);
+  public PureCheck(Parallel<F, F> parallel, String name, NonEmptyList<TestSuite<F, E>> suites) {
+    this.parallel = checkNonNull(parallel);
     this.name = checkNonEmpty(name);
     this.suites = checkNonNull(suites);
   }
   
   public Kind<F, Report<E>> runK() {
     Kind<F, Kind<Sequence_, TestSuite.Report<E>>> sequence = 
-        SequenceInstances.traverse().sequence(applicative, suites.map(TestSuite::runK));
+        parallel.parSequence(SequenceInstances.traverse(), suites.map(TestSuite::runK));
     
-    Kind<F, Sequence<TestSuite.Report<E>>> results = applicative.map(sequence, SequenceOf::narrowK);
+    Kind<F, Sequence<TestSuite.Report<E>>> results = parallel.monad().map(sequence, SequenceOf::narrowK);
     
-    return applicative.map(results, xs -> new PureCheck.Report<>(name, xs));
+    return parallel.monad().map(results, xs -> new PureCheck.Report<>(name, xs));
   }
   
   public abstract Report<E> run();

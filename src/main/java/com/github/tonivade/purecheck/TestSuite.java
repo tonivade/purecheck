@@ -17,7 +17,7 @@ import com.github.tonivade.purefun.data.Sequence;
 import com.github.tonivade.purefun.data.SequenceOf;
 import com.github.tonivade.purefun.data.Sequence_;
 import com.github.tonivade.purefun.instances.SequenceInstances;
-import com.github.tonivade.purefun.typeclasses.Applicative;
+import com.github.tonivade.purefun.typeclasses.Parallel;
 
 /**
  * It defines a test suite that is composed by a non empty collection of test cases
@@ -31,19 +31,19 @@ import com.github.tonivade.purefun.typeclasses.Applicative;
  */
 public abstract class TestSuite<F extends Witness, E> {
 
-  private final Applicative<F> applicative;
+  private final Parallel<F, F> parallel;
   private final String name;
   private final Sequence<TestCase<F, E, ?>> tests;
   
   /**
    * It will throw {@code NullPointerException} if the tests is null
    * 
-   * @param applicative applicative instance for type F
+   * @param parallel parallel instance for type F
    * @param name name of the suite
    * @param tests list of tests
    */
-  public TestSuite(Applicative<F> applicative, String name, NonEmptyList<TestCase<F, E, ?>> tests) {
-    this.applicative = checkNonNull(applicative);
+  public TestSuite(Parallel<F, F> parallel, String name, NonEmptyList<TestCase<F, E, ?>> tests) {
+    this.parallel = checkNonNull(parallel);
     this.name = checkNonEmpty(name);
     this.tests = checkNonNull(tests);
   }
@@ -55,11 +55,11 @@ public abstract class TestSuite<F extends Witness, E> {
    */
   public Kind<F, Report<E>> runK() {
     Kind<F, Kind<Sequence_, TestResult<E, ?>>> sequence = 
-        SequenceInstances.traverse().sequence(applicative, tests.map(TestCase::run));
+        parallel.parSequence(SequenceInstances.traverse(), tests.map(TestCase::run));
 
-    Kind<F, Sequence<TestResult<E, ?>>> results = applicative.map(sequence, SequenceOf::narrowK);
+    Kind<F, Sequence<TestResult<E, ?>>> results = parallel.monad().map(sequence, SequenceOf::narrowK);
 
-    return applicative.map(results, xs -> new Report<>(name, xs));
+    return parallel.monad().map(results, xs -> new Report<>(name, xs));
   }
 
   /**
