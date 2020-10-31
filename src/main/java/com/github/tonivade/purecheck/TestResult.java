@@ -170,6 +170,9 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
 
     @Override
     public void assertion() {
+      if (value.isLeft()) {
+        throw new AssertionError(toString(), value.getLeft());
+      }
       throw new AssertionError(toString());
     }
 

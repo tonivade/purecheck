@@ -85,11 +85,11 @@ public interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, E, T> {
     }
 
     public <T> WhenStep<F, T> givenNull() {
-      return given(null);
+      return given((T) null);
     }
 
     public <T> WhenStep<F, T> noGiven() {
-      return given(null);
+      return given((T) null);
     }
   }
 
