@@ -11,6 +11,7 @@ import static com.github.tonivade.purecheck.TestResult.success;
 import static com.github.tonivade.purefun.Function1.identity;
 import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
+import static com.github.tonivade.purefun.Producer.cons;
 
 import java.time.Duration;
 
@@ -76,6 +77,10 @@ public interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, E, T> {
     }
 
     public <T> WhenStep<F, T> given(T given) {
+      return given(cons(given));
+    }
+
+    public <T> WhenStep<F, T> given(Producer<T> given) {
       return new WhenStep<>(monad, name, given);
     }
 
@@ -92,9 +97,9 @@ public interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, E, T> {
 
     private final MonadDefer<F> monad;
     private final String name;
-    private final T given;
+    private final Producer<T> given;
 
-    private WhenStep(MonadDefer<F> monad, String name, T given) {
+    private WhenStep(MonadDefer<F> monad, String name, Producer<T> given) {
       this.monad = monad;
       this.name = name;
       this.given = given;
@@ -129,10 +134,10 @@ public interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, E, T> {
 
     private final MonadDefer<F> monad;
     private final String name;
-    private final T given;
+    private final Producer<T> given;
     private final Function1<? super T, ? extends Kind<F, R>> when;
 
-    private ThenStep(MonadDefer<F> monad, String name, T given, Function1<? super T, ? extends Kind<F, R>> when) {
+    private ThenStep(MonadDefer<F> monad, String name, Producer<T> given, Function1<? super T, ? extends Kind<F, R>> when) {
       this.monad = monad;
       this.name = name;
       this.given = given;
@@ -140,7 +145,7 @@ public interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, E, T> {
     }
 
     public <E> TestCase<F, E, R> then(Either<Validator<Result<E>, Throwable>, Validator<Result<E>, R>> then) {
-      return new TestCaseImpl<>(monad, name, monad.defer(() -> when.apply(given)), then);
+      return new TestCaseImpl<>(monad, name, monad.defer(() -> when.apply(given.get())), then);
     }
 
     public <E> TestCase<F, E, R> thenOnSuccess(Validator<Result<E>, R> validator) {
