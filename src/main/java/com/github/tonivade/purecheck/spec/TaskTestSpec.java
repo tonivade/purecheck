@@ -4,10 +4,12 @@
  */
 package com.github.tonivade.purecheck.spec;
 
+import static com.github.tonivade.purefun.typeclasses.Instance.applicative;
+import static com.github.tonivade.purefun.typeclasses.Instance.monadDefer;
+import static com.github.tonivade.purefun.typeclasses.Instance.runtime;
+
 import com.github.tonivade.purecheck.TestSpec;
 import com.github.tonivade.purefun.effect.Task_;
-import com.github.tonivade.purefun.instances.TaskInstances;
-import com.github.tonivade.purefun.runtimes.Runtime;
 
 /**
  * A silly class to define the test case factory and reuse
@@ -17,6 +19,6 @@ import com.github.tonivade.purefun.runtimes.Runtime;
 public abstract class TaskTestSpec<E> extends TestSpec<Task_, E> {
 
   public TaskTestSpec() {
-    super(Runtime.task(), TaskInstances.monadDefer(), TaskInstances.applicative());
+    super(runtime(Task_.class), monadDefer(Task_.class), applicative(Task_.class));
   }
 }

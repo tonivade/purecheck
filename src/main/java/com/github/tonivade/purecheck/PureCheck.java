@@ -6,6 +6,7 @@ package com.github.tonivade.purecheck;
 
 import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
+import static com.github.tonivade.purefun.typeclasses.Instance.traverse;
 
 import java.util.concurrent.Executor;
 
@@ -16,7 +17,6 @@ import com.github.tonivade.purefun.data.NonEmptyList;
 import com.github.tonivade.purefun.data.Sequence;
 import com.github.tonivade.purefun.data.SequenceOf;
 import com.github.tonivade.purefun.data.Sequence_;
-import com.github.tonivade.purefun.instances.SequenceInstances;
 import com.github.tonivade.purefun.typeclasses.Parallel;
 
 public abstract class PureCheck<F extends Witness, E> {
@@ -33,7 +33,7 @@ public abstract class PureCheck<F extends Witness, E> {
   
   public Kind<F, Report<E>> runK() {
     Kind<F, Kind<Sequence_, TestSuite.Report<E>>> sequence = 
-        parallel.parSequence(SequenceInstances.traverse(), suites.map(TestSuite::runK));
+        parallel.parSequence(traverse(Sequence_.class), suites.map(TestSuite::runK));
     
     Kind<F, Sequence<TestSuite.Report<E>>> results = parallel.monad().map(sequence, SequenceOf::narrowK);
     

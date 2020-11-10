@@ -4,10 +4,12 @@
  */
 package com.github.tonivade.purecheck.spec;
 
+import static com.github.tonivade.purefun.typeclasses.Instance.applicative;
+import static com.github.tonivade.purefun.typeclasses.Instance.monadDefer;
+import static com.github.tonivade.purefun.typeclasses.Instance.runtime;
+
 import com.github.tonivade.purecheck.TestSpec;
 import com.github.tonivade.purefun.effect.UIO_;
-import com.github.tonivade.purefun.instances.UIOInstances;
-import com.github.tonivade.purefun.runtimes.Runtime;
 
 /**
  * A silly class to define the test case factory and reuse
@@ -17,6 +19,6 @@ import com.github.tonivade.purefun.runtimes.Runtime;
 public abstract class UIOTestSpec<E> extends TestSpec<UIO_, E> {
 
   public UIOTestSpec() {
-    super(Runtime.uio(), UIOInstances.monadDefer(), UIOInstances.applicative());
+    super(runtime(UIO_.class), monadDefer(UIO_.class), applicative(UIO_.class));
   }
 }

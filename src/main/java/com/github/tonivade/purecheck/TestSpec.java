@@ -11,7 +11,7 @@ import java.util.concurrent.Executor;
 import com.github.tonivade.purefun.Witness;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyList;
-import com.github.tonivade.purefun.runtimes.Runtime;
+import com.github.tonivade.purefun.typeclasses.Runtime;
 import com.github.tonivade.purefun.typeclasses.Applicative;
 import com.github.tonivade.purefun.typeclasses.FunctionK;
 import com.github.tonivade.purefun.typeclasses.Monad;

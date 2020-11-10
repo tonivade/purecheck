@@ -6,6 +6,7 @@ package com.github.tonivade.purecheck;
 
 import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
+import static com.github.tonivade.purefun.typeclasses.Instance.monadDefer;
 
 import java.time.Duration;
 
@@ -19,9 +20,6 @@ import com.github.tonivade.purefun.effect.Task;
 import com.github.tonivade.purefun.effect.Task_;
 import com.github.tonivade.purefun.effect.UIO;
 import com.github.tonivade.purefun.effect.UIO_;
-import com.github.tonivade.purefun.instances.IOInstances;
-import com.github.tonivade.purefun.instances.TaskInstances;
-import com.github.tonivade.purefun.instances.UIOInstances;
 import com.github.tonivade.purefun.monad.IO;
 import com.github.tonivade.purefun.monad.IO_;
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
@@ -84,27 +82,27 @@ public final class PerfCase<F extends Witness, T> {
   }
   
   public static <T> PerfCase<IO_, T> ioPerfCase(String name, Producer<T> task) {
-    return perfCase(name, IOInstances.monadDefer(), task);
+    return perfCase(name, monadDefer(IO_.class), task);
   }
   
   public static <T> PerfCase<IO_, T> ioPerfCase(String name, IO<T> task) {
-    return perfCase(name, IOInstances.monadDefer(), task);
+    return perfCase(name, monadDefer(IO_.class), task);
   }
   
   public static <T> PerfCase<UIO_, T> uioPerfCase(String name, Producer<T> task) {
-    return perfCase(name, UIOInstances.monadDefer(), task);
+    return perfCase(name, monadDefer(UIO_.class), task);
   }
   
   public static <T> PerfCase<UIO_, T> uioPerfCase(String name, UIO<T> task) {
-    return perfCase(name, UIOInstances.monadDefer(), task);
+    return perfCase(name, monadDefer(UIO_.class), task);
   }
   
   public static <T> PerfCase<Task_, T> taskPerfCase(String name, Producer<T> task) {
-    return perfCase(name, TaskInstances.monadDefer(), task);
+    return perfCase(name, monadDefer(Task_.class), task);
   }
   
   public static <T> PerfCase<Task_, T> taskPerfCase(String name, Task<T> task) {
-    return perfCase(name, TaskInstances.monadDefer(), task);
+    return perfCase(name, monadDefer(Task_.class), task);
   }
   
   public static <F extends Witness, T> PerfCase<F, T> perfCase(String name, MonadDefer<F> monad, Producer<T> task) {
