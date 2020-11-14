@@ -4,10 +4,6 @@
  */
 package com.github.tonivade.purecheck.spec;
 
-import static com.github.tonivade.purefun.typeclasses.Instance.applicative;
-import static com.github.tonivade.purefun.typeclasses.Instance.monadDefer;
-import static com.github.tonivade.purefun.typeclasses.Instance.runtime;
-
 import com.github.tonivade.purecheck.TestSpec;
 import com.github.tonivade.purefun.monad.IO_;
 
@@ -19,6 +15,6 @@ import com.github.tonivade.purefun.monad.IO_;
 public abstract class IOTestSpec<E> extends TestSpec<IO_, E> {
 
   public IOTestSpec() {
-    super(runtime(IO_.class), monadDefer(IO_.class), applicative(IO_.class));
+    super(IO_.class);
   }
 }

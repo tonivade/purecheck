@@ -11,12 +11,13 @@ import java.util.concurrent.Executor;
 import com.github.tonivade.purefun.Witness;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyList;
-import com.github.tonivade.purefun.typeclasses.Runtime;
 import com.github.tonivade.purefun.typeclasses.Applicative;
 import com.github.tonivade.purefun.typeclasses.FunctionK;
+import com.github.tonivade.purefun.typeclasses.Instance;
 import com.github.tonivade.purefun.typeclasses.Monad;
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
 import com.github.tonivade.purefun.typeclasses.Parallel;
+import com.github.tonivade.purefun.typeclasses.Runtime;
 
 public abstract class TestSpec<F extends Witness, E> {
 
@@ -25,6 +26,14 @@ public abstract class TestSpec<F extends Witness, E> {
   private final Runtime<F> runtime;
   private final Applicative<F> applicative;
   private final Monad<F> monad;
+  
+  public TestSpec(Class<F> type) {
+    this(new Instance<F>(type) { });
+  }
+  
+  public TestSpec(Instance<F> instance) {
+    this(instance.runtime(), instance.monadDefer(), instance.applicative());
+  }
 
   public TestSpec(Runtime<F> runtime, MonadDefer<F> monad, Applicative<F> applicative) {
     this.runtime = checkNonNull(runtime);
