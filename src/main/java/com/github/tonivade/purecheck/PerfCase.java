@@ -54,6 +54,7 @@ public final class PerfCase<F extends Witness, T> {
         min(array), 
         max(array), 
         mean(array, total), 
+        median(array),
         percentile(50, array), 
         percentile(90, array), 
         percentile(90, array), 
@@ -67,6 +68,14 @@ public final class PerfCase<F extends Witness, T> {
 
   private static Duration mean(ImmutableArray<Duration> array, Duration total) {
     return total.dividedBy(array.size());
+  }
+
+  private Duration median(ImmutableArray<Duration> array) {
+    int median = array.size() / 2;
+    if (array.size() % 2 == 0) {
+      return array.get(median).plus(array.get(median + 1)).dividedBy(2);
+    }
+    return array.get(median);
   }
 
   private static Duration max(ImmutableArray<Duration> array) {
@@ -120,18 +129,20 @@ public final class PerfCase<F extends Witness, T> {
     private final Duration min;
     private final Duration max;
     private final Duration mean;
+    private final Duration median;
     private final Duration p50;
     private final Duration p90;
     private final Duration p95;
     private final Duration p99;
 
-    public Stats(String name, Duration total, Duration min, Duration max, Duration mean, 
+    public Stats(String name, Duration total, Duration min, Duration max, Duration mean, Duration median,
         Duration p50, Duration p90, Duration p95, Duration p99) {
       this.name = checkNonEmpty(name);
       this.total = checkNonNull(total);
       this.min = checkNonNull(min);
       this.max = checkNonNull(max);
       this.mean = checkNonNull(mean);
+      this.median = checkNonNull(median);
       this.p50 = checkNonNull(p50);
       this.p90 = checkNonNull(p90);
       this.p95 = checkNonNull(p95);
@@ -147,6 +158,8 @@ public final class PerfCase<F extends Witness, T> {
     public Duration getMax() { return max; }
 
     public Duration getMean() { return mean; }
+    
+    public Duration getMedian() { return median; }
 
     public Duration getP50() { return p50; }
 
@@ -158,8 +171,8 @@ public final class PerfCase<F extends Witness, T> {
 
     @Override
     public String toString() {
-      return String.format("Stats[name=%s,total=%s,min=%s,max=%s,mean=%s,p50=%s,p90=%s,p95=%s,p99=%s]", 
-          name, total, min, max, mean, p50, p90, p95, p99);
+      return String.format("Stats[name=%s,total=%s,min=%s,max=%s,mean=%s,median=%s,p50=%s,p90=%s,p95=%s,p99=%s]", 
+          name, total, min, max, mean, median, p50, p90, p95, p99);
     }
   }
 }
