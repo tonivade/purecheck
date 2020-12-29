@@ -14,7 +14,7 @@ import com.github.tonivade.purefun.effect.UIO_;
  */
 public abstract class UIOTestSpec<E> extends TestSpec<UIO_, E> {
 
-  public UIOTestSpec() {
+  protected UIOTestSpec() {
     super(UIO_.class);
   }
 }

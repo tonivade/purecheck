@@ -14,7 +14,7 @@ import com.github.tonivade.purefun.monad.IO_;
  */
 public abstract class IOTestSpec<E> extends TestSpec<IO_, E> {
 
-  public IOTestSpec() {
+  protected IOTestSpec() {
     super(IO_.class);
   }
 }

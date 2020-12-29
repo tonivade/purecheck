@@ -14,7 +14,7 @@ import com.github.tonivade.purefun.effect.Task_;
  */
 public abstract class TaskTestSpec<E> extends TestSpec<Task_, E> {
 
-  public TaskTestSpec() {
+  protected TaskTestSpec() {
     super(Task_.class);
   }
 }

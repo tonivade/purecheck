@@ -70,7 +70,7 @@ public final class PerfCase<F extends Witness, T> {
     return total.dividedBy(array.size());
   }
 
-  private Duration median(ImmutableArray<Duration> array) {
+  private static Duration median(ImmutableArray<Duration> array) {
     int median = array.size() / 2;
     if (array.size() % 2 == 0) {
       return array.get(median).plus(array.get(median + 1)).dividedBy(2);

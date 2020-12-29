@@ -25,7 +25,7 @@ public abstract class PureCheck<F extends Witness, E> {
   private final String name;
   private final NonEmptyList<TestSuite<F, E>> suites;
   
-  public PureCheck(Parallel<F, F> parallel, String name, NonEmptyList<TestSuite<F, E>> suites) {
+  protected PureCheck(Parallel<F, F> parallel, String name, NonEmptyList<TestSuite<F, E>> suites) {
     this.parallel = checkNonNull(parallel);
     this.name = checkNonEmpty(name);
     this.suites = checkNonNull(suites);

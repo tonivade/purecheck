@@ -42,7 +42,7 @@ public abstract class TestSuite<F extends Witness, E> {
    * @param name name of the suite
    * @param tests list of tests
    */
-  public TestSuite(Parallel<F, F> parallel, String name, NonEmptyList<TestCase<F, E, ?>> tests) {
+  protected TestSuite(Parallel<F, F> parallel, String name, NonEmptyList<TestCase<F, E, ?>> tests) {
     this.parallel = checkNonNull(parallel);
     this.name = checkNonEmpty(name);
     this.tests = checkNonNull(tests);
