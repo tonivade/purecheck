@@ -17,7 +17,7 @@ import com.github.tonivade.purefun.Producer;
 import com.github.tonivade.purefun.data.Range;
 import com.github.tonivade.purefun.monad.IO_;
 
-public class PerfCaseTest extends IOTestSpec<String> {
+class PerfCaseTest extends IOTestSpec<String> {
 
   @Test
   void perfTest() {

@@ -6,15 +6,18 @@ package com.github.tonivade.purecheck;
 
 import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
+import static com.github.tonivade.purefun.data.Sequence.listOf;
 import static com.github.tonivade.purefun.typeclasses.Instance.monadDefer;
 
 import java.time.Duration;
 
 import com.github.tonivade.purefun.Kind;
 import com.github.tonivade.purefun.Producer;
+import com.github.tonivade.purefun.Tuple;
 import com.github.tonivade.purefun.Tuple2;
 import com.github.tonivade.purefun.Witness;
 import com.github.tonivade.purefun.data.ImmutableArray;
+import com.github.tonivade.purefun.data.ImmutableMap;
 import com.github.tonivade.purefun.data.Sequence;
 import com.github.tonivade.purefun.effect.Task;
 import com.github.tonivade.purefun.effect.Task_;
@@ -22,6 +25,7 @@ import com.github.tonivade.purefun.effect.UIO;
 import com.github.tonivade.purefun.effect.UIO_;
 import com.github.tonivade.purefun.monad.IO;
 import com.github.tonivade.purefun.monad.IO_;
+import com.github.tonivade.purefun.type.Option;
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
 import com.github.tonivade.purefun.typeclasses.Schedule;
 import com.github.tonivade.purefun.typeclasses.Schedule.ScheduleOf;
@@ -54,10 +58,11 @@ public final class PerfCase<F extends Witness, T> {
         max(array), 
         mean(array, total), 
         median(array),
-        percentile(50, array), 
-        percentile(90, array), 
-        percentile(90, array), 
-        percentile(99, array));
+        listOf(
+            percentile(50, array), 
+            percentile(90, array), 
+            percentile(95, array), 
+            percentile(99, array)));
   }
 
   private Schedule<F, Duration, Sequence<Duration>> recursAndCollect(int times) {
@@ -85,8 +90,8 @@ public final class PerfCase<F extends Witness, T> {
     return array.foldLeft(Duration.ofDays(365), (d1, d2) -> d1.compareTo(d2) > 0 ? d2 : d1);
   }
   
-  private static Duration percentile(double percentile, ImmutableArray<Duration> array) {
-    return array.get((int) Math.round(percentile / 100.0 * (array.size() - 1)));
+  private static Tuple2<Double, Duration> percentile(double percentile, ImmutableArray<Duration> array) {
+    return Tuple.of(percentile, array.get((int) Math.round(percentile / 100.0 * (array.size() - 1))));
   }
   
   public static <T> PerfCase<IO_, T> ioPerfCase(String name, Producer<T> task) {
@@ -129,23 +134,17 @@ public final class PerfCase<F extends Witness, T> {
     private final Duration max;
     private final Duration mean;
     private final Duration median;
-    private final Duration p50;
-    private final Duration p90;
-    private final Duration p95;
-    private final Duration p99;
+    private final ImmutableMap<Double, Duration> percentiles;
 
     public Stats(String name, Duration total, Duration min, Duration max, Duration mean, Duration median,
-        Duration p50, Duration p90, Duration p95, Duration p99) {
+        Sequence<Tuple2<Double, Duration>> percentiles) {
       this.name = checkNonEmpty(name);
       this.total = checkNonNull(total);
       this.min = checkNonNull(min);
       this.max = checkNonNull(max);
       this.mean = checkNonNull(mean);
       this.median = checkNonNull(median);
-      this.p50 = checkNonNull(p50);
-      this.p90 = checkNonNull(p90);
-      this.p95 = checkNonNull(p95);
-      this.p99 = checkNonNull(p99);
+      this.percentiles = ImmutableMap.from(checkNonNull(percentiles));
     }
     
     public String getName() { return name; }
@@ -160,18 +159,15 @@ public final class PerfCase<F extends Witness, T> {
     
     public Duration getMedian() { return median; }
 
-    public Duration getP50() { return p50; }
-
-    public Duration getP90() { return p90; }
-
-    public Duration getP95() { return p95; }
-
-    public Duration getP99() { return p99; }
+    public Option<Duration> getPercentile(double percentile) { 
+      return percentiles.get(percentile); 
+    }
 
     @Override
     public String toString() {
-      return String.format("Stats[name=%s,total=%s,min=%s,max=%s,mean=%s,median=%s,p50=%s,p90=%s,p95=%s,p99=%s]", 
-          name, total, min, max, mean, median, p50, p90, p95, p99);
+      return String.format("Stats[name=%s,total=%s,min=%s,max=%s,mean=%s,median=%s,%s]", 
+          name, total, min, max, mean, median, percentiles.entries().map(
+              t -> String.format("p%s=%s", t.get1(), t.get2())).join(","));
     }
   }
 }
