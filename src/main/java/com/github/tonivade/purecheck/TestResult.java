@@ -156,6 +156,7 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
      * and {@code IllegalArgumentException} if name is a empty String.
      * 
      * @param name name of the test, non empty value
+     * @param caller stack frame of the caller
      * @param value result of the operation under test
      * @param result result of the validation applied to the value
      */
@@ -218,6 +219,7 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
      * and {@code IllegalArgumentException} if name is a empty String.
      * 
      * @param name name of the test, non empty value
+     * @param caller stack frame of the caller
      * @param error error captured by the test
      */
     private Error(String name, StackFrame caller, Either<T, Throwable> error) {

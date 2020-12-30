@@ -39,9 +39,8 @@ public final class PerfCase<F extends Witness, T> {
   }
   
   public Kind<F, Stats> run(int times) {
-    Kind<F, Tuple2<Duration, T>> timed = monad.timed(task);
-    Kind<F, Duration> map = monad.map(timed, Tuple2::get1);
-    Kind<F, Sequence<Duration>> repeat = monad.repeat(map, recursAndCollect(times));
+    var timed = monad.map(monad.timed(task), Tuple2::get1);
+    var repeat = monad.repeat(timed, recursAndCollect(times));
     return monad.map(repeat, this::stats);
   }
 
