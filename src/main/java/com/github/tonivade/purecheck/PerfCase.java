@@ -6,6 +6,7 @@ package com.github.tonivade.purecheck;
 
 import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
+import static com.github.tonivade.purefun.Unit.unit;
 import static com.github.tonivade.purefun.data.Sequence.listOf;
 import static com.github.tonivade.purefun.typeclasses.Instance.monadDefer;
 
@@ -15,6 +16,7 @@ import com.github.tonivade.purefun.Kind;
 import com.github.tonivade.purefun.Producer;
 import com.github.tonivade.purefun.Tuple;
 import com.github.tonivade.purefun.Tuple2;
+import com.github.tonivade.purefun.Unit;
 import com.github.tonivade.purefun.Witness;
 import com.github.tonivade.purefun.data.ImmutableArray;
 import com.github.tonivade.purefun.data.ImmutableMap;
@@ -35,17 +37,23 @@ public final class PerfCase<F extends Witness, T> {
   private final String name;
   private final MonadDefer<F> monad;
   private final Kind<F, T> task;
+  private final Kind<F, Unit> warmup;
 
-  private PerfCase(String name, MonadDefer<F> monad, Kind<F, T> task) {
+  private PerfCase(String name, MonadDefer<F> monad, Kind<F, T> task, Kind<F, Unit> warmup) {
     this.name = checkNonEmpty(name);
     this.monad = checkNonNull(monad);
     this.task = checkNonNull(task);
+    this.warmup = checkNonNull(warmup);
+  }
+  
+  public PerfCase<F, T> warmup(int times) {
+    return new PerfCase<>(name, monad, task, monad.repeat(task, this.<T>recurs(times).unit()));
   }
   
   public Kind<F, Stats> run(int times) {
     var timed = monad.map(monad.timed(task), Tuple2::get1);
     var repeat = monad.repeat(timed, recursAndCollect(times));
-    return monad.map(repeat, this::stats);
+    return monad.andThen(warmup, () -> monad.map(repeat, this::stats));
   }
 
   private Stats stats(Sequence<Duration> results) {
@@ -53,21 +61,26 @@ public final class PerfCase<F extends Witness, T> {
     Duration total = array.reduce(Duration::plus).getOrElseThrow();
     return new Stats(
         name,
-        total, 
-        min(array), 
-        max(array), 
-        mean(array, total), 
+        total,
+        min(array),
+        max(array),
+        mean(array, total),
         median(array),
         listOf(
-            percentile(50, array), 
-            percentile(90, array), 
-            percentile(95, array), 
+            percentile(50, array),
+            percentile(90, array),
+            percentile(95, array),
             percentile(99, array)));
   }
 
   private Schedule<F, Duration, Sequence<Duration>> recursAndCollect(int times) {
     ScheduleOf<F> scheduleOf = monad.scheduleOf();
-    return scheduleOf.<Duration>recurs(times).zipRight(scheduleOf.identity()).collectAll();
+    return this.<Duration>recurs(times).zipRight(scheduleOf.identity()).collectAll();
+  }
+
+  private <A> Schedule<F, A, Integer> recurs(int times) {
+    ScheduleOf<F> scheduleOf = monad.scheduleOf();
+    return scheduleOf.<A>recurs(times);
   }
 
   private static Duration mean(ImmutableArray<Duration> array, Duration total) {
@@ -123,7 +136,7 @@ public final class PerfCase<F extends Witness, T> {
   }
   
   public static <F extends Witness, T> PerfCase<F, T> perfCase(String name, MonadDefer<F> monad, Kind<F, T> task) {
-    return new PerfCase<>(name, monad, task);
+    return new PerfCase<>(name, monad, task, monad.pure(unit()));
   }
   
   public static final class Stats {

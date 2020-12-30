@@ -24,7 +24,7 @@ class PerfCaseTest extends IOTestSpec<String> {
     TestSuite<IO_, String> suite = suite("stats test", 
         it.should("do some work")
           .given(1000)
-          .run(ioPerfCase("test", task())::run)
+          .run(ioPerfCase("test", task()).warmup(10)::run)
           .thenMustBe(lowerThan(Duration.ofMillis(1), () -> "total time less than 1ms").compose(PerfCase.Stats::getTotal)));
     
     AssertionError error = assertThrows(AssertionError.class, () -> suite.run().assertion());
