@@ -27,15 +27,15 @@ public abstract class TestSpec<F extends Witness, E> {
   private final Applicative<F> applicative;
   private final Monad<F> monad;
   
-  public TestSpec(Class<F> type) {
-    this(new Instance<F>(type) { });
+  protected TestSpec(Class<F> type) {
+    this(new Instance<>(type) { });
   }
   
-  public TestSpec(Instance<F> instance) {
+  protected TestSpec(Instance<F> instance) {
     this(instance.runtime(), instance.monadDefer(), instance.applicative());
   }
 
-  public TestSpec(Runtime<F> runtime, MonadDefer<F> monad, Applicative<F> applicative) {
+  protected TestSpec(Runtime<F> runtime, MonadDefer<F> monad, Applicative<F> applicative) {
     this.runtime = checkNonNull(runtime);
     this.applicative = checkNonNull(applicative);
     this.monad = checkNonNull(monad);
@@ -45,7 +45,7 @@ public abstract class TestSpec<F extends Witness, E> {
   @SafeVarargs
   protected final TestSuite<F, E> suite(
       String name, TestCase<F, E, ?> test, TestCase<F, E, ?>... tests) {
-    return new TestSuite<F, E>(parallel(), name, NonEmptyList.of(test, tests)) {
+    return new TestSuite<>(parallel(), name, NonEmptyList.of(test, tests)) {
       @Override
       public TestSuite.Report<E> run() {
         return runtime.run(runK());
@@ -61,7 +61,7 @@ public abstract class TestSpec<F extends Witness, E> {
   @SafeVarargs
   protected final PureCheck<F, E> pureCheck(
       String name, TestSuite<F, E> suite, TestSuite<F, E>... suites) {
-    return new PureCheck<F, E>(parallel(), name, NonEmptyList.of(suite, suites)) {
+    return new PureCheck<>(parallel(), name, NonEmptyList.of(suite, suites)) {
       @Override
       public PureCheck.Report<E> run() {
         return runtime.run(runK());

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.lang.StackWalker.StackFrame;
 import java.util.Objects;
 
 import com.github.tonivade.purefun.Equal;
@@ -61,20 +62,20 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
     return new Success<>(name, Either.left(error));
   }
   
-  static <E, T> TestResult<E, T> failure(String name, T value, Result<E> result) {
-    return new Failure<>(name, Either.right(value), result);
+  static <E, T> TestResult<E, T> failure(String name, StackFrame caller, T value, Result<E> result) {
+    return new Failure<>(name, caller, Either.right(value), result);
   }
   
-  static <E, T> TestResult<E, T> failure(String name, Throwable error, Result<E> result) {
-    return new Failure<>(name, Either.left(error), result);
+  static <E, T> TestResult<E, T> failure(String name, StackFrame caller, Throwable error, Result<E> result) {
+    return new Failure<>(name, caller, Either.left(error), result);
   }
   
-  static <E, T> TestResult<E, T> error(String name, Throwable error) {
-    return new Error<>(name, Either.right(error));
+  static <E, T> TestResult<E, T> error(String name, StackFrame caller, Throwable error) {
+    return new Error<>(name, caller, Either.right(error));
   }
   
-  static <E, T> TestResult<E, T> error(String name, T error) {
-    return new Error<>(name, Either.left(error));
+  static <E, T> TestResult<E, T> error(String name, StackFrame caller, T error) {
+    return new Error<>(name, caller, Either.left(error));
   }
 
   static <E, T> TestResult<E, T> disabled(String name, String reason) {
@@ -146,6 +147,7 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
         .comparing(x -> x.result);
 
     private final String name;
+    private final StackFrame caller;
     private final Either<Throwable, T> value;
     private final Result<E> result;
 
@@ -157,8 +159,9 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
      * @param value result of the operation under test
      * @param result result of the validation applied to the value
      */
-    private Failure(String name, Either<Throwable, T> value, Result<E> result) {
+    private Failure(String name, StackFrame caller, Either<Throwable, T> value, Result<E> result) {
       this.name = checkNonEmpty(name);
+      this.caller = checkNonNull(caller);
       this.value = checkNonNull(value);
       this.result = checkNonNull(result);
     }
@@ -178,7 +181,7 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
 
     @Override
     public <R> TestResult<E, R> map(Function1<T, R> mapper) {
-      return new Failure<>(name, value.map(mapper::apply), result);
+      return new Failure<>(name, caller, value.map(mapper::apply), result);
     }
 
     @Override
@@ -193,8 +196,8 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
 
     @Override
     public String toString() {
-      return String.format("test '%s' FAILURE: expected '%s' but was '%s'", 
-          name, result.join(","), value.fold(Object::toString, Object::toString));
+      return String.format("test '%s' at '%s' FAILURE: expected '%s' but was '%s'", 
+          name, caller, result.join(","), value.fold(Object::toString, Object::toString));
     }
   }
 
@@ -207,6 +210,7 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
         .comparing(x -> x.error);
 
     private final String name;
+    private final StackFrame caller;
     private final Either<T, Throwable> error;
 
     /**
@@ -216,8 +220,9 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
      * @param name name of the test, non empty value
      * @param error error captured by the test
      */
-    private Error(String name, Either<T, Throwable> error) {
+    private Error(String name, StackFrame caller, Either<T, Throwable> error) {
       this.name = checkNonEmpty(name);
+      this.caller = checkNonNull(caller);
       this.error = checkNonNull(error);
     }
     
@@ -233,7 +238,7 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
 
     @Override
     public <R> TestResult<E, R> map(Function1<T, R> mapper) {
-      return new Error<>(name, error.mapLeft(mapper::apply));
+      return new Error<>(name, caller, error.mapLeft(mapper::apply));
     }
 
     @Override
@@ -248,8 +253,8 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
 
     @Override
     public String toString() {
-      return String.format("test '%s' ERROR: %s", 
-          name, error.fold(Object::toString, Error::full));
+      return String.format("test '%s' at '%s' ERROR: %s", 
+          name, caller, error.fold(Object::toString, Error::full));
     }
 
     private static String full(Throwable error) {

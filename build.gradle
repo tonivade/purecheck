@@ -8,8 +8,8 @@ group = 'com.github.tonivade'
 archivesBaseName = 'purecheck'
 version = '0.2-SNAPSHOT'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 11
+targetCompatibility = 11
 
 buildscript {
   repositories {
@@ -39,14 +39,6 @@ test {
   useJUnitPlatform()
 }
   
-compileJava {
-  options.release = 8
-}
-
-compileTestJava {
-  options.release = 8
-}
-
 dependencies {
   annotationProcessor 'com.github.tonivade:purefun-processor:2.2'
   api 'com.github.tonivade:purefun-typeclasses:2.2'
