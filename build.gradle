@@ -46,7 +46,7 @@ dependencies {
   implementation 'com.github.tonivade:purefun-effect:2.3-SNAPSHOT'
   runtime 'com.github.tonivade:purefun-instances:2.3-SNAPSHOT'
   testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
-  testImplementation 'org.junit.platform:junit-platform-runner:1.7.1'
+  testImplementation 'org.junit.platform:junit-platform-runner:1.7.2'
   testImplementation 'org.mockito:mockito-core:3.10.0'
   testImplementation 'org.mockito:mockito-junit-jupiter:3.10.0'
 }
