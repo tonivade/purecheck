@@ -15,19 +15,18 @@ import org.junit.jupiter.api.Test;
 import com.github.tonivade.purecheck.spec.IOTestSpec;
 import com.github.tonivade.purefun.Producer;
 import com.github.tonivade.purefun.data.Range;
-import com.github.tonivade.purefun.monad.IO_;
 
 class PerfCaseTest extends IOTestSpec<String> {
 
   @Test
   void perfTest() {
-    TestSuite<IO_, String> suite = suite("stats test", 
+    var suite = suite("stats test", 
         it.should("do some work")
           .given(1000)
           .run(ioPerfCase("test", task()).warmup(10)::run)
           .thenMustBe(lowerThan(Duration.ofMillis(1), () -> "total time less than 1ms").compose(PerfCase.Stats::getTotal)));
     
-    AssertionError error = assertThrows(AssertionError.class, () -> suite.run().assertion());
+    var error = assertThrows(AssertionError.class, () -> suite.run().assertion());
     
     error.printStackTrace();
   }

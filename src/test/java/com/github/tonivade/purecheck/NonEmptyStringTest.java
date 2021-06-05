@@ -73,11 +73,9 @@ class NonEmptyStringTest extends UIOTestSpec<String> {
 
   @Test
   void serial() {
-    TestSuite.Report<String> run = suite.run();
-
-    run.assertion();
+    suite.run().assertion();
     
-    System.out.println(run);
+    System.out.println(suite.run());
   }
 
   @Test

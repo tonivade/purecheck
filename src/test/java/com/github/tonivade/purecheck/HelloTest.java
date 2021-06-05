@@ -27,14 +27,13 @@ import com.github.tonivade.purecheck.spec.IOTestSpec;
 import com.github.tonivade.purefun.Unit;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.monad.IO;
-import com.github.tonivade.purefun.type.Try;
 
 @ExtendWith(MockitoExtension.class)
 class HelloTest extends IOTestSpec<String> {
 
   @Test
   void testHello() {
-    Try<TestSuite.Report<String>> result =
+    var result =
         suite("some tests suite",
 
             it.should("say hello")
@@ -67,7 +66,7 @@ class HelloTest extends IOTestSpec<String> {
 
   @Test
   void testOnError() {
-    TestSuite.Report<String> result = suite("some tests suite", 
+    var result = suite("some tests suite", 
         it.should("check if it fails")
           .noGiven()
           .when(error())
@@ -83,7 +82,7 @@ class HelloTest extends IOTestSpec<String> {
   void repeat(@Mock IO<String> task) {
     when(task.unsafeRunSync()).thenReturn("Hello Toni");
     
-    TestSuite.Report<String> result =
+    var result =
         suite("some tests suite",
             it.should("reapeat")
               .given(task)
@@ -101,7 +100,7 @@ class HelloTest extends IOTestSpec<String> {
     when(task.unsafeRunSync())
         .thenReturn("Hello Toni");
 
-    TestSuite.Report<String> result =
+    var result =
         suite("some tests suite",
             it.should("retry on error")
                 .given(task)
@@ -120,7 +119,7 @@ class HelloTest extends IOTestSpec<String> {
       .thenThrow(RuntimeException.class)
       .thenReturn("Hello Toni");
     
-    TestSuite.Report<String> result =
+    var result =
         suite("some tests suite",
             it.should("retry on error")
               .given(task)
@@ -138,7 +137,7 @@ class HelloTest extends IOTestSpec<String> {
     when(task.unsafeRunSync())
         .thenReturn("Hello Toni");
 
-    TestSuite.Report<String> result =
+    var result =
         suite("some tests suite",
             it.should("retry on failure")
                 .given(task)
@@ -157,7 +156,7 @@ class HelloTest extends IOTestSpec<String> {
       .thenReturn("Hello World")
       .thenReturn("Hello Toni");
     
-    TestSuite.Report<String> result =
+    var result =
         suite("some tests suite",
             it.should("retry on failure")
               .given(task)
@@ -172,7 +171,7 @@ class HelloTest extends IOTestSpec<String> {
   
   @Test
   void timed() {
-    TestSuite.Report<String> result =
+    var result =
         suite("some tests suite",
             it.should("timed")
               .given("Toni")
