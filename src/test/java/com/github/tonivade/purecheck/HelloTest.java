@@ -24,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.github.tonivade.purecheck.spec.IOTestSpec;
+import com.github.tonivade.purefun.Producer;
 import com.github.tonivade.purefun.Unit;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.monad.IO;
@@ -79,92 +80,94 @@ class HelloTest extends IOTestSpec<String> {
   }
   
   @Test
-  void repeat(@Mock IO<String> task) {
-    when(task.unsafeRunSync()).thenReturn("Hello Toni");
+  void repeat(@Mock Producer<String> task) {
+    when(task.get()).thenReturn("Hello Toni");
     
     var result =
         suite("some tests suite",
             it.should("reapeat")
-              .given(task)
+              .given(IO.task(task))
               .run(identity())
               .thenMustBe(equalsTo("Hello Toni")).repeat(3)
             ).run();
     
-    verify(task, times(4)).unsafeRunSync();
+    verify(task, times(4)).get();
     
     System.out.println(result);
   }
 
   @Test
-  void retryOnErrorWhenSuccess(@Mock IO<String> task) {
-    when(task.unsafeRunSync())
+  void retryOnErrorWhenSuccess(@Mock Producer<String> task) {
+    when(task.get())
         .thenReturn("Hello Toni");
+    
+    IO.task(task);
 
     var result =
         suite("some tests suite",
             it.should("retry on error")
-                .given(task)
+                .given(IO.task(task))
                 .run(identity())
                 .thenMustBe(equalsTo("Hello Toni")).retryOnError(3)
         ).run();
 
-    verify(task, times(1)).unsafeRunSync();
+    verify(task, times(1)).get();
 
     System.out.println(result);
   }
 
   @Test
-  void retryOnError(@Mock IO<String> task) {
-    when(task.unsafeRunSync())
+  void retryOnError(@Mock Producer<String> task) {
+    when(task.get())
       .thenThrow(RuntimeException.class)
       .thenReturn("Hello Toni");
     
     var result =
         suite("some tests suite",
             it.should("retry on error")
-              .given(task)
+              .given(IO.task(task))
               .run(identity())
               .thenMustBe(equalsTo("Hello Toni")).retryOnError(3)
             ).run();
     
-    verify(task, times(2)).unsafeRunSync();
+    verify(task, times(2)).get();
     
     System.out.println(result);
   }
 
   @Test
-  void retryOnFailureWhenSuccess(@Mock IO<String> task) {
-    when(task.unsafeRunSync())
+  void retryOnFailureWhenSuccess(@Mock Producer<String> task) {
+    when(task.get())
         .thenReturn("Hello Toni");
 
     var result =
         suite("some tests suite",
             it.should("retry on failure")
-                .given(task)
+                .given(IO.task(task))
                 .run(identity())
                 .thenMustBe(equalsTo("Hello Toni")).retryOnFailure(3)
         ).run();
 
-    verify(task, times(1)).unsafeRunSync();
+    verify(task, times(1)).get();
 
     System.out.println(result);
   }
 
   @Test
-  void retryOnFailure(@Mock IO<String> task) {
-    when(task.unsafeRunSync())
+  void retryOnFailure(@Mock Producer<String> task) {
+    when(task.get())
       .thenReturn("Hello World")
       .thenReturn("Hello Toni");
     
     var result =
         suite("some tests suite",
             it.should("retry on failure")
-              .given(task)
+              .given(IO.task(task))
               .run(identity())
               .thenMustBe(equalsTo("Hello Toni")).retryOnFailure(3)
             ).run();
     
-    verify(task, times(2)).unsafeRunSync();
+    verify(task, times(2)).get();
     
     System.out.println(result);
   }
