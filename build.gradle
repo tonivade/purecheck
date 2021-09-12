@@ -10,7 +10,7 @@ plugins {
 apply plugin: 'com.diffplug.eclipse.apt'
 
 group = 'com.github.tonivade'
-version = '0.2-SNAPSHOT'
+version = '0.2'
 
 sourceCompatibility = 11
 targetCompatibility = 11
@@ -32,6 +32,11 @@ repositories {
   maven {
     url = 'https://oss.sonatype.org/content/repositories/snapshots'
   }
+}
+
+java {
+  withJavadocJar()
+  withSourcesJar()
 }
 
 test {
