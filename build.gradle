@@ -10,17 +10,12 @@ plugins {
 apply plugin: 'com.diffplug.eclipse.apt'
 
 group = 'com.github.tonivade'
-version = '0.2'
+version = '0.3-SNAPSHOT'
 
 sourceCompatibility = 11
 targetCompatibility = 11
   
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
-
-java {
-  withJavadocJar()
-  withSourcesJar()
-}
 
 jacoco {
   toolVersion = '0.8.6'
