@@ -39,11 +39,11 @@ test {
 }
   
 dependencies {
-  annotationProcessor 'com.github.tonivade:purefun-processor:2.3-SNAPSHOT'
-  api 'com.github.tonivade:purefun-typeclasses:2.3-SNAPSHOT'
-  implementation 'com.github.tonivade:purefun-monad:2.3-SNAPSHOT'
-  implementation 'com.github.tonivade:purefun-effect:2.3-SNAPSHOT'
-  runtimeOnly 'com.github.tonivade:purefun-instances:2.3-SNAPSHOT'
+  annotationProcessor 'com.github.tonivade:purefun-processor:3.0-SNAPSHOT'
+  api 'com.github.tonivade:purefun-typeclasses:3.0-SNAPSHOT'
+  implementation 'com.github.tonivade:purefun-monad:3.0-SNAPSHOT'
+  implementation 'com.github.tonivade:purefun-effect:3.0-SNAPSHOT'
+  runtimeOnly 'com.github.tonivade:purefun-instances:3.0-SNAPSHOT'
   testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
   testImplementation 'org.junit.platform:junit-platform-runner:1.7.2'
   testImplementation 'org.mockito:mockito-core:3.12.4'
