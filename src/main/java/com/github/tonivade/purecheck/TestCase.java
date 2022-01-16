@@ -39,8 +39,8 @@ import com.github.tonivade.purefun.typeclasses.MonadDefer;
  * @param <E> type of error generated
  * @param <T> type of the result returned by the operation
  */
-@HigherKind(sealed = true)
-public interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, E, T> {
+@HigherKind
+public sealed interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, E, T> {
 
   String name();
 
@@ -180,7 +180,7 @@ public interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, E, T> {
  * @param <E> type of error generated
  * @param <T> type of the result returned by the operation
  */
-final class TestCaseImpl<F extends Witness, E, T> implements SealedTestCase<F, E, T> {
+final class TestCaseImpl<F extends Witness, E, T> implements TestCase<F, E, T> {
   
   private final String name;
   private final Kind<F, TestResult<E, T>> test;
