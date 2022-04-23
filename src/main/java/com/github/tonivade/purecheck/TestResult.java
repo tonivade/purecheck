@@ -14,9 +14,7 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.StackWalker.StackFrame;
-import java.util.Objects;
 
-import com.github.tonivade.purefun.Equal;
 import com.github.tonivade.purefun.Function1;
 import com.github.tonivade.purefun.HigherKind;
 import com.github.tonivade.purefun.Recoverable;
@@ -31,8 +29,8 @@ import com.github.tonivade.purefun.type.Validation.Result;
  * @param <E> type of the error
  * @param <T> type of the value
  */
-@HigherKind(sealed = true)
-public interface TestResult<E, T> extends TestResultOf<E, T> {
+@HigherKind
+public sealed interface TestResult<E, T> extends TestResultOf<E, T> {
 
   default boolean isSuccess() {
     return false;
@@ -82,16 +80,9 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
     return new Disabled<>(name, reason);
   }
 
-  final class Success<E, T> implements SealedTestResult<E, T>, Serializable {
+  record Success<E, T>(String name, Either<Throwable, T> value) implements TestResult<E, T>, Serializable {
 
     private static final long serialVersionUID = 2612477493587755025L;
-
-    private static final Equal<Success<?, ?>> EQUAL = Equal.<Success<?, ?>>of()
-        .comparing(x -> x.name)
-        .comparing(x -> x.value);
-
-    private final String name;
-    private final Either<Throwable, T> value;
 
     /**
      * it will throw a {@code NullPointerException} if any of the params are null
@@ -100,9 +91,9 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
      * @param name name of the test, non empty value
      * @param value result of the operation under test
      */
-    private Success(String name, Either<Throwable, T> value) {
-      this.name = checkNonEmpty(name);
-      this.value = checkNonNull(value);
+    public Success {
+      checkNonEmpty(name);
+      checkNonNull(value);
     }
 
     @Override
@@ -121,35 +112,15 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
     }
 
     @Override
-    public boolean equals(Object obj) {
-      return EQUAL.applyTo(this, obj);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(name, value);
-    }
-
-    @Override
     public String toString() {
       return String.format("it should '%s' SUCCESS: '%s'", 
           name, value.fold(Object::toString, Object::toString));
     }
   }
 
-  final class Failure<E, T> implements SealedTestResult<E, T>, Serializable {
+  record Failure<E, T>(String name, StackFrame caller, Either<Throwable, T> value, Result<E> result) implements TestResult<E, T>, Serializable {
 
     private static final long serialVersionUID = 4834239536246492448L;
-
-    private static final Equal<Failure<?, ?>> EQUAL = Equal.<Failure<?, ?>>of()
-        .comparing(x -> x.name)
-        .comparing(x -> x.value)
-        .comparing(x -> x.result);
-
-    private final String name;
-    private final StackFrame caller;
-    private final Either<Throwable, T> value;
-    private final Result<E> result;
 
     /**
      * it will throw a {@code NullPointerException} if any of the params are null
@@ -160,11 +131,11 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
      * @param value result of the operation under test
      * @param result result of the validation applied to the value
      */
-    private Failure(String name, StackFrame caller, Either<Throwable, T> value, Result<E> result) {
-      this.name = checkNonEmpty(name);
-      this.caller = checkNonNull(caller);
-      this.value = checkNonNull(value);
-      this.result = checkNonNull(result);
+    public Failure {
+      checkNonEmpty(name);
+      checkNonNull(caller);
+      checkNonNull(value);
+      checkNonNull(result);
     }
 
     @Override
@@ -186,33 +157,15 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
     }
 
     @Override
-    public boolean equals(Object obj) {
-      return EQUAL.applyTo(this, obj);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(name, value, result);
-    }
-
-    @Override
     public String toString() {
       return String.format("test '%s' at '%s' FAILURE: expected '%s' but was '%s'", 
           name, caller, result.join(","), value.fold(Object::toString, Object::toString));
     }
   }
 
-  final class Error<E, T> implements SealedTestResult<E, T>, Recoverable, Serializable {
+  record Error<E, T>(String name, StackFrame caller, Either<T, Throwable> error) implements TestResult<E, T>, Recoverable, Serializable {
 
     private static final long serialVersionUID = 4181923995414226773L;
-
-    private static final Equal<Error<?, ?>> EQUAL = Equal.<Error<?, ?>>of()
-        .comparing(x -> x.name)
-        .comparing(x -> x.error);
-
-    private final String name;
-    private final StackFrame caller;
-    private final Either<T, Throwable> error;
 
     /**
      * it will throw a {@code NullPointerException} if any of the params are null
@@ -222,10 +175,10 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
      * @param caller stack frame of the caller
      * @param error error captured by the test
      */
-    private Error(String name, StackFrame caller, Either<T, Throwable> error) {
-      this.name = checkNonEmpty(name);
-      this.caller = checkNonNull(caller);
-      this.error = checkNonNull(error);
+    public Error {
+      checkNonEmpty(name);
+      checkNonNull(caller);
+      checkNonNull(error);
     }
     
     @Override
@@ -241,16 +194,6 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
     @Override
     public <R> TestResult<E, R> map(Function1<T, R> mapper) {
       return new Error<>(name, caller, error.mapLeft(mapper::apply));
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      return EQUAL.applyTo(this, obj);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(name, error);
     }
 
     @Override
@@ -271,16 +214,9 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
     }
   }
 
-  final class Disabled<E, T> implements SealedTestResult<E, T>, Serializable {
+  record Disabled<E, T>(String name, String reason) implements TestResult<E, T>, Serializable {
 
     private static final long serialVersionUID = -8661817362831938094L;
-
-    private static final Equal<Disabled<?, ?>> EQUAL = Equal.<Disabled<?, ?>>of()
-        .comparing(x -> x.name)
-        .comparing(x -> x.reason);
-
-    private final String name;
-    private final String reason;
 
     /**
      * it will throw a {@code NullPointerException} if any of the params are null
@@ -289,9 +225,9 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
      * @param name name of the test, non empty value
      * @param reason description
      */
-    private Disabled(String name, String reason) {
-      this.name = checkNonEmpty(name);
-      this.reason = checkNonEmpty(reason);
+    public Disabled {
+      checkNonEmpty(name);
+      checkNonEmpty(reason);
     }
 
     @Override
@@ -307,16 +243,6 @@ public interface TestResult<E, T> extends TestResultOf<E, T> {
     @Override
     public <R> TestResult<E, R> map(Function1<T, R> mapper) {
       return new Disabled<>(name, reason);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      return EQUAL.applyTo(this, obj);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(name, reason);
     }
 
     @Override

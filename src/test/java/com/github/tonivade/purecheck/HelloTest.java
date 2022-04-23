@@ -60,9 +60,9 @@ class HelloTest extends IOTestSpec<String> {
 
           ).parRun(Future.DEFAULT_EXECUTOR).await();
     
-    System.out.println(result.get());
+    System.out.println(result.getOrElseThrow());
     
-    assertThrows(AssertionError.class, result.get()::assertion);
+    assertThrows(AssertionError.class, result.getOrElseThrow()::assertion);
   }
 
   @Test

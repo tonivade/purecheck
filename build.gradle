@@ -11,14 +11,11 @@ apply plugin: 'com.diffplug.eclipse.apt'
 
 group = 'com.github.tonivade'
 version = '0.3-SNAPSHOT'
-
-sourceCompatibility = 11
-targetCompatibility = 11
   
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 jacoco {
-  toolVersion = '0.8.6'
+  toolVersion = '0.8.7'
 }
 
 repositories {
@@ -30,20 +27,38 @@ repositories {
 }
 
 java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(17)
+  }
+  
   withJavadocJar()
   withSourcesJar()
 }
 
+compileJava {
+  options.compilerArgs << '-Xlint:unchecked'
+  options.compilerArgs << '-Xlint:rawtypes'
+  options.release = 17
+}
+
+compileTestJava {
+  options.compilerArgs << '-Xlint:unchecked'
+  options.compilerArgs << '-Xlint:rawtypes'
+  options.release = 17
+}
+
 test {
   useJUnitPlatform()
+
+  reports.html.required = false
 }
   
 dependencies {
-  annotationProcessor 'com.github.tonivade:purefun-processor:3.0'
-  api 'com.github.tonivade:purefun-typeclasses:3.0'
-  implementation 'com.github.tonivade:purefun-monad:3.0'
-  implementation 'com.github.tonivade:purefun-effect:3.0'
-  runtimeOnly 'com.github.tonivade:purefun-instances:3.0'
+  annotationProcessor 'com.github.tonivade:purefun-processor:3.99.0-SNAPSHOT'
+  api 'com.github.tonivade:purefun-typeclasses:3.99.0-SNAPSHOT'
+  implementation 'com.github.tonivade:purefun-monad:3.99.0-SNAPSHOT'
+  implementation 'com.github.tonivade:purefun-effect:3.99.0-SNAPSHOT'
+  runtimeOnly 'com.github.tonivade:purefun-instances:3.99.0-SNAPSHOT'
   testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
   testImplementation 'org.junit.platform:junit-platform-runner:1.8.2'
   testImplementation 'org.mockito:mockito-core:4.5.1'
