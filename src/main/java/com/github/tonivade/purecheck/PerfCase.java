@@ -8,7 +8,7 @@ import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
 import static com.github.tonivade.purefun.Unit.unit;
 import static com.github.tonivade.purefun.data.Sequence.listOf;
-import static com.github.tonivade.purefun.typeclasses.Instance.monadDefer;
+import static com.github.tonivade.purefun.typeclasses.Instances.monadDefer;
 
 import java.time.Duration;
 
