@@ -10,7 +10,7 @@ plugins {
 apply plugin: 'com.diffplug.eclipse.apt'
 
 group = 'com.github.tonivade'
-version = '0.3-SNAPSHOT'
+version = '0.3'
   
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
