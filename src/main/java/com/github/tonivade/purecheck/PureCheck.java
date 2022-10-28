@@ -32,9 +32,17 @@ public abstract class PureCheck<F extends Witness, E> {
   }
   
   public Kind<F, Report<E>> runK() {
+    var sequence = traverse(Sequence_.class).sequence(parallel.monad(), suites.map(TestSuite::runK));
+    
+    Kind<F, Sequence<TestSuite.Report<E>>> results = parallel.monad().map(sequence, SequenceOf::narrowK);
+    
+    return parallel.monad().map(results, xs -> new PureCheck.Report<>(name, xs));
+  }
+  
+  public Kind<F, Report<E>> runParK() {
     var sequence = parallel.parSequence(traverse(Sequence_.class), suites.map(TestSuite::runK));
     
-    var results = parallel.monad().map(sequence, SequenceOf::narrowK);
+    Kind<F, Sequence<TestSuite.Report<E>>> results = parallel.monad().map(sequence, SequenceOf::narrowK);
     
     return parallel.monad().map(results, xs -> new PureCheck.Report<>(name, xs));
   }

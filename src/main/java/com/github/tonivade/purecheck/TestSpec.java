@@ -53,7 +53,7 @@ public abstract class TestSpec<F extends Witness, E> {
       
       @Override
       public Future<TestSuite.Report<E>> parRun(Executor executor) {
-        return runtime.parRun(runK(), executor);
+        return runtime.parRun(runParK(), executor);
       }
     };
   }
@@ -69,7 +69,7 @@ public abstract class TestSpec<F extends Witness, E> {
       
       @Override
       public Future<PureCheck.Report<E>> parRun(Executor executor) {
-        return runtime.parRun(runK(), executor);
+        return runtime.parRun(runParK(), executor);
       }
     };
   }
