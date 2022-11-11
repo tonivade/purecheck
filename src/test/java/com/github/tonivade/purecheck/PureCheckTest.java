@@ -25,7 +25,7 @@ public class PureCheckTest extends TaskTestSpec<String> {
         it.should("say hello")
           .given("Toni")
           .when(name -> "Hello " + name)
-          .thenMustBe(equalsTo("Hello Toni"))
+          .then(equalsTo("Hello Toni"))
         );
   }
   
@@ -34,7 +34,7 @@ public class PureCheckTest extends TaskTestSpec<String> {
         it.should("say goodbye")
           .given("Toni")
           .when(name -> "Goodbye " + name)
-          .thenMustBe(equalsTo("Bye Toni"))
+          .then(equalsTo("Bye Toni"))
         );
   }
 }

@@ -20,6 +20,7 @@ import java.time.Duration;
 import com.github.tonivade.purefun.Function1;
 import com.github.tonivade.purefun.HigherKind;
 import com.github.tonivade.purefun.Kind;
+import com.github.tonivade.purefun.Matcher1;
 import com.github.tonivade.purefun.Producer;
 import com.github.tonivade.purefun.Tuple;
 import com.github.tonivade.purefun.Tuple2;
@@ -107,12 +108,12 @@ public sealed interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, 
       this.given = given;
     }
 
-    public <R> ThenStep<F, T, R> run(Function1<? super T, ? extends Kind<F, R>> when) {
+    public <R> ThenStep<F, T, R> whenK(Function1<? super T, ? extends Kind<F, R>> when) {
       return new ThenStep<>(monad, name, given, when);
     }
 
     public <R> ThenStep<F, T, R> when(Function1<? super T, ? extends R> when) {
-      return run(when.liftTry().andThen(result -> result.fold(monad::raiseError, monad::pure)));
+      return whenK(when.liftTry().andThen(monad::fromTry));
     }
 
     public ThenStep<F, T, T> noop() {
@@ -120,7 +121,7 @@ public sealed interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, 
     }
 
     public <R> ThenStep<F, T, R> when(Kind<F, R> when) {
-      return run(ignore -> when);
+      return whenK(ignore -> when);
     }
 
     public <R> ThenStep<F, T, R> when(Producer<R> when) {
@@ -153,20 +154,24 @@ public sealed interface TestCase<F extends Witness, E, T> extends TestCaseOf<F, 
       return new TestCaseImpl<>(monad, name, caller, monad.defer(() -> when.apply(given.get())), then);
     }
 
-    public <E> TestCase<F, E, R> thenOnSuccess(Validator<Result<E>, R> validator) {
+    public <E> TestCase<F, E, R> onSuccess(Validator<Result<E>, R> validator) {
       return then(Either.right(validator));
     }
 
-    public <E> TestCase<F, E, R> thenOnFailure(Validator<Result<E>, Throwable> validator) {
+    public <E> TestCase<F, E, R> onFailure(Validator<Result<E>, Throwable> validator) {
       return then(Either.left(validator));
     }
 
-    public <E> TestCase<F, E, R> thenMustBe(Validator<E, R> validator) {
-      return thenOnSuccess(validator.mapError(Result::of));
+    public <E> TestCase<F, E, R> then(Validator<E, R> validator) {
+      return onSuccess(validator.mapError(Result::of));
+    }
+
+    public TestCase<F, String, R> thenThrows(Class<? extends Throwable> clazz) {
+      return thenThrows(Validator.from(Matcher1.instanceOf(clazz), () -> "required exception of type: " + clazz));
     }
 
     public <E> TestCase<F, E, R> thenThrows(Validator<E, Throwable> validator) {
-      return thenOnFailure(validator.mapError(Result::of));
+      return onFailure(validator.mapError(Result::of));
     }
   }
 }

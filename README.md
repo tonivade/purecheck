@@ -51,27 +51,27 @@ This a simple example:
       it.should("contains a non empty string")
           .given("hola mundo")
           .when(NonEmptyString::of)
-          .thenMustBe(equalsTo("hola mundo").compose(NonEmptyString::get)),
+          .then(equalsTo("hola mundo").compose(NonEmptyString::get)),
 
       it.should("map inner value")
           .given(NonEmptyString.of("hola mundo"))
           .when(hello -> hello.map(String::toUpperCase))
-          .thenMustBe(equalsTo("HOLA MUNDO").compose(NonEmptyString::get)),
+          .then(equalsTo("HOLA MUNDO").compose(NonEmptyString::get)),
 
       it.should("transform inner value")
           .given(NonEmptyString.of("hola mundo"))
           .when(hello -> hello.transform(String::toUpperCase))
-          .thenMustBe(equalsTo("HOLA MUNDO")),
+          .then(equalsTo("HOLA MUNDO")),
 
       it.should("be equals to other string `hola mundo`")
           .given(NonEmptyString.of("hola mundo"))
           .noop()
-          .thenMustBe(equalsTo(NonEmptyString.of("hola mundo"))),
+          .then(equalsTo(NonEmptyString.of("hola mundo"))),
 
       it.should("not be equals to other string different to `hola mundo`")
           .given(NonEmptyString.of("hola mundo"))
           .noop()
-          .thenMustBe(notEqualsTo(NonEmptyString.of("HOLA MUNDO")))
+          .then(notEqualsTo(NonEmptyString.of("HOLA MUNDO")))
   );
  ```
  

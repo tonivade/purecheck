@@ -26,7 +26,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.github.tonivade.purecheck.spec.IOTestSpec;
 import com.github.tonivade.purefun.Producer;
 import com.github.tonivade.purefun.Unit;
-import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.monad.IO;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,26 +38,26 @@ class HelloTest extends IOTestSpec<String> {
 
             it.should("say hello")
               .given("Toni")
-              .run(HelloTest::hello)
-              .thenMustBe(equalsTo("Hello Toni")),
+              .whenK(HelloTest::hello)
+              .then(equalsTo("Hello Toni")),
 
             it.should("don't say goodbye")
               .given("Toni")
-              .run(HelloTest::hello)
-              .thenMustBe(startsWith("Bye")),
+              .whenK(HelloTest::hello)
+              .then(startsWith("Bye")),
 
             it.should("catch exceptions")
               .given("Toni")
               .when(error())
-              .thenOnSuccess(startsWith("Bye").combine(endsWith("Toni"))),
+              .onSuccess(startsWith("Bye").combine(endsWith("Toni"))),
 
             it.should("disabled test")
               .given("Toni")
               .when(error())
-              .thenOnSuccess(startsWith("Bye").combine(endsWith("Toni")))
+              .onSuccess(startsWith("Bye").combine(endsWith("Toni")))
               .disable("not working")
 
-          ).parRun(Future.DEFAULT_EXECUTOR).await();
+          ).parRun().await();
     
     System.out.println(result.getOrElseThrow());
     
@@ -87,8 +86,8 @@ class HelloTest extends IOTestSpec<String> {
         suite("some tests suite",
             it.should("reapeat")
               .given(IO.task(task))
-              .run(identity())
-              .thenMustBe(equalsTo("Hello Toni")).repeat(3)
+              .whenK(identity())
+              .then(equalsTo("Hello Toni")).repeat(3)
             ).run();
     
     verify(task, times(4)).get();
@@ -107,8 +106,8 @@ class HelloTest extends IOTestSpec<String> {
         suite("some tests suite",
             it.should("retry on error")
                 .given(IO.task(task))
-                .run(identity())
-                .thenMustBe(equalsTo("Hello Toni")).retryOnError(3)
+                .whenK(identity())
+                .then(equalsTo("Hello Toni")).retryOnError(3)
         ).run();
 
     verify(task, times(1)).get();
@@ -126,8 +125,8 @@ class HelloTest extends IOTestSpec<String> {
         suite("some tests suite",
             it.should("retry on error")
               .given(IO.task(task))
-              .run(identity())
-              .thenMustBe(equalsTo("Hello Toni")).retryOnError(3)
+              .whenK(identity())
+              .then(equalsTo("Hello Toni")).retryOnError(3)
             ).run();
     
     verify(task, times(2)).get();
@@ -144,8 +143,8 @@ class HelloTest extends IOTestSpec<String> {
         suite("some tests suite",
             it.should("retry on failure")
                 .given(IO.task(task))
-                .run(identity())
-                .thenMustBe(equalsTo("Hello Toni")).retryOnFailure(3)
+                .whenK(identity())
+                .then(equalsTo("Hello Toni")).retryOnFailure(3)
         ).run();
 
     verify(task, times(1)).get();
@@ -163,8 +162,8 @@ class HelloTest extends IOTestSpec<String> {
         suite("some tests suite",
             it.should("retry on failure")
               .given(IO.task(task))
-              .run(identity())
-              .thenMustBe(equalsTo("Hello Toni")).retryOnFailure(3)
+              .whenK(identity())
+              .then(equalsTo("Hello Toni")).retryOnFailure(3)
             ).run();
     
     verify(task, times(2)).get();
@@ -178,8 +177,8 @@ class HelloTest extends IOTestSpec<String> {
         suite("some tests suite",
             it.should("timed")
               .given("Toni")
-              .run(name -> hello(name))
-              .thenMustBe(equalsTo("Hello Toni")).timed()
+              .whenK(name -> hello(name))
+              .then(equalsTo("Hello Toni")).timed()
             ).run();
 
     System.out.println(result);

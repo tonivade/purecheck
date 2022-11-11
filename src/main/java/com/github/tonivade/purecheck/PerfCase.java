@@ -66,11 +66,11 @@ public final class PerfCase<F extends Witness, T> {
         max(array),
         mean(array, total),
         median(array),
-        listOf(
+        ImmutableMap.from(listOf(
             percentile(50, array),
             percentile(90, array),
             percentile(95, array),
-            percentile(99, array)));
+            percentile(99, array))));
   }
 
   private Schedule<F, Duration, Sequence<Duration>> recursAndCollect(int times) {
@@ -139,39 +139,25 @@ public final class PerfCase<F extends Witness, T> {
     return new PerfCase<>(name, monad, task, monad.pure(unit()));
   }
   
-  public static final class Stats {
-
-    private final String name;
-    private final Duration total;
-    private final Duration min;
-    private final Duration max;
-    private final Duration mean;
-    private final Duration median;
-    private final ImmutableMap<Double, Duration> percentiles;
-
-    public Stats(String name, Duration total, Duration min, Duration max, Duration mean, Duration median,
-        Sequence<Tuple2<Double, Duration>> percentiles) {
-      this.name = checkNonEmpty(name);
-      this.total = checkNonNull(total);
-      this.min = checkNonNull(min);
-      this.max = checkNonNull(max);
-      this.mean = checkNonNull(mean);
-      this.median = checkNonNull(median);
-      this.percentiles = ImmutableMap.from(checkNonNull(percentiles));
+  public static record Stats( 
+    String name,
+    Duration total,
+    Duration min,
+    Duration max,
+    Duration mean,
+    Duration median,
+    ImmutableMap<Double, Duration> percentiles) {
+    
+    public Stats {
+      checkNonEmpty(name);
+      checkNonNull(total);
+      checkNonNull(min);
+      checkNonNull(max);
+      checkNonNull(mean);
+      checkNonNull(median);
+      checkNonNull(percentiles);
     }
     
-    public String getName() { return name; }
-
-    public Duration getTotal() { return total; }
-
-    public Duration getMin() { return min; }
-
-    public Duration getMax() { return max; }
-
-    public Duration getMean() { return mean; }
-    
-    public Duration getMedian() { return median; }
-
     public Option<Duration> getPercentile(double percentile) { 
       return percentiles.get(percentile); 
     }
