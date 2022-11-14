@@ -250,7 +250,7 @@ final class TestCaseImpl<F extends Witness, E, T, R> implements TestCase<F, E, T
   @Override
   public Kind<F, TestResult<E, T, R>> run() {
     return For.with(monad)
-      .andThen(given.liftOption().andThen(monad::pure))
+      .then(monad.later(given.liftOption()))
       .flatMap(input -> monad.attempt(when.apply(input.getOrElseNull())))
       .apply((input, result) -> fold(name, input.getOrElseNull(), caller, result, then));
 
