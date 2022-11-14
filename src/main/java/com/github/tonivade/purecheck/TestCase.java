@@ -30,6 +30,7 @@ import com.github.tonivade.purefun.type.Either;
 import com.github.tonivade.purefun.type.Validation;
 import com.github.tonivade.purefun.type.Validation.Result;
 import com.github.tonivade.purefun.typeclasses.For;
+import com.github.tonivade.purefun.typeclasses.Monad;
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
 
 /**
@@ -257,7 +258,7 @@ final class TestCaseImpl<F extends Witness, E, T, R> implements TestCase<F, E, T
 
   @Override
   public TestCase<F, E, T, R> disable(String reason) {
-    return new TestCaseEnd<>(name, monad.pure(disabled(name, reason)));
+    return new TestCaseEnd<>(monad, name, monad.pure(disabled(name, reason)));
   }
 
   @Override
@@ -277,9 +278,12 @@ final class TestCaseImpl<F extends Witness, E, T, R> implements TestCase<F, E, T
 
   @Override
   public TestCase<F, E, T, R> retryOnFailure(int times) {
-    Kind<F, TestResult<E, T, R>> test = run();
-    var retry = monad.flatMap(test, result -> result.isFailure() ? monad.retry(test, monad.scheduleOf().recurs(times)) : monad.pure(result));
-    return new TestCaseEnd<>(name, retry);
+    if (times > 0) {
+      Kind<F, TestResult<E, T, R>> test = run();
+      var retry = monad.flatMap(test, result -> result.isFailure() ? test : monad.pure(result));
+      return new TestCaseEnd<>(monad, name, retry).retryOnFailure(times - 1);
+    }
+    return this;
   }
 
   @Override
@@ -306,10 +310,12 @@ final class TestCaseImpl<F extends Witness, E, T, R> implements TestCase<F, E, T
 
 final class TestCaseEnd<F extends Witness, E, T, R> implements TestCase<F, E, T, R> {
 
+  private final Monad<F> monad;
   private final String name;
   private final Kind<F, TestResult<E, T, R>> test;
 
-  public TestCaseEnd(String name, Kind<F, TestResult<E, T, R>> test) {
+  public TestCaseEnd(Monad<F> monad, String name, Kind<F, TestResult<E, T, R>> test) {
+    this.monad = checkNonNull(monad);
     this.name = checkNonEmpty(name);
     this.test = checkNonNull(test);
   }
@@ -341,7 +347,11 @@ final class TestCaseEnd<F extends Witness, E, T, R> implements TestCase<F, E, T,
 
   @Override
   public TestCase<F, E, T, R> retryOnFailure(int times) {
-    throw new UnsupportedOperationException();
+    if (times > 0) {
+      var retry = monad.flatMap(test, result -> result.isFailure() ? test : monad.pure(result));
+      return new TestCaseEnd<>(monad, name, retry).retryOnFailure(times - 1);
+    }
+    return this;
   }
 
   @Override
