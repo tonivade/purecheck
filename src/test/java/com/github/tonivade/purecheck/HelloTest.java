@@ -119,6 +119,8 @@ class HelloTest extends IOTestSpec<String> {
   void retryOnError(@Mock Producer<String> task) {
     when(task.get())
       .thenThrow(RuntimeException.class)
+      .thenThrow(RuntimeException.class)
+      .thenThrow(RuntimeException.class)
       .thenReturn("Hello Toni");
 
     var result =
@@ -126,10 +128,10 @@ class HelloTest extends IOTestSpec<String> {
             it.should("retry on error")
               .given(IO.task(task))
               .whenK(identity())
-              .then(equalsTo("Hello Toni")).retryOnError(3)
+              .then(equalsTo("Hello Toni")).retryOnError(10)
             ).run();
 
-    verify(task, times(2)).get();
+    verify(task, times(4)).get();
 
     System.out.println(result);
   }
@@ -156,6 +158,8 @@ class HelloTest extends IOTestSpec<String> {
   void retryOnFailure(@Mock Producer<String> task) {
     when(task.get())
       .thenReturn("Hello World")
+      .thenReturn("Hello World")
+      .thenReturn("Hello World")
       .thenReturn("Hello Toni");
 
     var result =
@@ -163,10 +167,10 @@ class HelloTest extends IOTestSpec<String> {
             it.should("retry on failure")
               .given(IO.task(task))
               .whenK(identity())
-              .then(equalsTo("Hello Toni")).retryOnFailure(3)
+              .then(equalsTo("Hello Toni")).retryOnFailure(10)
             ).run();
 
-    verify(task, times(2)).get();
+    verify(task, times(4)).get();
 
     System.out.println(result);
   }

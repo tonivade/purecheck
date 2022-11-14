@@ -271,9 +271,8 @@ final class TestCaseImpl<F extends Witness, E, T, R> implements TestCase<F, E, T
 
   @Override
   public TestCase<F, E, T, R> retryOnError(int times) {
-    Kind<F, TestResult<E, T, R>> test = run();
-    var retry = monad.flatMap(test, result -> result.isError() ? monad.retry(test, monad.scheduleOf().recurs(times)) : monad.pure(result));
-    return new TestCaseEnd<>(name, retry);
+    var retry = when.andThen(test -> monad.retry(test, monad.scheduleOf().recurs(times)));
+    return new TestCaseImpl<>(monad, name, caller, given, retry, then);
   }
 
   @Override
