@@ -112,8 +112,8 @@ public sealed interface TestResult<E, T, R> {
 
     @Override
     public String toString() {
-      return String.format("it should '%s' SUCCESS: '%s'",
-          name, value.fold(Object::toString, Object::toString));
+      return String.format("it should '%s' with input '%s' SUCCESS: '%s'",
+          name, input, value.fold(Object::toString, Object::toString));
     }
   }
 
@@ -157,8 +157,8 @@ public sealed interface TestResult<E, T, R> {
 
     @Override
     public String toString() {
-      return String.format("test '%s' at '%s' FAILURE: expected '%s' but was '%s'",
-          name, caller, result.join(","), value.fold(Object::toString, Object::toString));
+      return String.format("test '%s' at '%s' with input '%s' FAILURE: expected '%s' but was '%s'",
+          name, caller, input, result.join(","), value.fold(Object::toString, Object::toString));
     }
   }
 
@@ -197,8 +197,8 @@ public sealed interface TestResult<E, T, R> {
 
     @Override
     public String toString() {
-      return String.format("test '%s' at '%s' ERROR: %s",
-          name, caller, error.fold(Object::toString, Error::full));
+      return String.format("test '%s' at '%s' with input '%s' ERROR: %s",
+          name, caller, input, error.fold(Object::toString, Error::full));
     }
 
     private static String full(Throwable error) {

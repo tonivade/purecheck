@@ -4,7 +4,6 @@
  */
 package com.github.tonivade.purecheck;
 
-import static com.github.tonivade.purecheck.Generator.randomInt;
 import static com.github.tonivade.purefun.Validator.equalsTo;
 import static com.github.tonivade.purefun.Validator.notEqualsTo;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -55,13 +54,7 @@ class NonEmptyStringTest extends UIOTestSpec<String> {
       it.should("not be equals to other string different to `hola mundo`")
           .given(NonEmptyString.of("hola mundo"))
           .noop()
-          .then(notEqualsTo(NonEmptyString.of("HOLA MUNDO"))),
-
-      it.should("xxx")
-          .given(randomInt())
-          .when(i -> Integer.parseInt(String.valueOf(i)))
-          .verify((i, o) -> i.equals(o), () -> "does not match")
-          .repeat(10)
+          .then(notEqualsTo(NonEmptyString.of("HOLA MUNDO")))
 
   );
 

@@ -29,7 +29,7 @@ import com.github.tonivade.purefun.Witness;
 import com.github.tonivade.purefun.type.Either;
 import com.github.tonivade.purefun.type.Validation;
 import com.github.tonivade.purefun.type.Validation.Result;
-import com.github.tonivade.purefun.typeclasses.Monad;
+import com.github.tonivade.purefun.typeclasses.For;
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
 
 /**
@@ -248,36 +248,39 @@ final class TestCaseImpl<F extends Witness, E, T, R> implements TestCase<F, E, T
    */
   @Override
   public Kind<F, TestResult<E, T, R>> run() {
-    var input = given.get();
-    return monad.map(when.andThen(monad::attempt).apply(input), result -> fold(name, input, caller, result, then));
+    return For.with(monad)
+      .andThen(given.liftOption().andThen(monad::pure))
+      .flatMap(input -> monad.attempt(when.apply(input.getOrElseNull())))
+      .apply((input, result) -> fold(name, input.getOrElseNull(), caller, result, then));
+
   }
 
   @Override
   public TestCase<F, E, T, R> disable(String reason) {
-    return new TestCaseDisabled<>(monad, name, reason);
+    return new TestCaseEnd<>(name, monad.pure(disabled(name, reason)));
   }
 
   @Override
   public TestCase<F, E, T, Tuple2<Duration, R>> timed() {
     return new TestCaseImpl<>(monad, name, caller, given, when.andThen(monad::timed), then.map(validator -> value -> {
       Tuple2<T, R> tuple = Tuple.of(value.get1(), value.get2().get2());
-      Validation<Result<E>, Tuple2<T, R>> validate = validator.validate(tuple);
-      return validate.map(Function1.cons(value));
+      Validation<Result<E>, Tuple2<T, R>> result = validator.validate(tuple);
+      return result.map(Function1.cons(value));
     }));
   }
 
   @Override
   public TestCase<F, E, T, R> retryOnError(int times) {
     Kind<F, TestResult<E, T, R>> test = run();
-    monad.flatMap(test, result -> result.isFailure() ? monad.retry(test, monad.scheduleOf().recurs(times)) : monad.pure(result));
-    return new TestCaseEnd<>(monad, name, test);
+    var retry = monad.flatMap(test, result -> result.isError() ? monad.retry(test, monad.scheduleOf().recurs(times)) : monad.pure(result));
+    return new TestCaseEnd<>(name, retry);
   }
 
   @Override
   public TestCase<F, E, T, R> retryOnFailure(int times) {
     Kind<F, TestResult<E, T, R>> test = run();
-    monad.flatMap(test, result -> result.isError() ? monad.retry(test, monad.scheduleOf().recurs(times)) : monad.pure(result));
-    return new TestCaseEnd<>(monad, name, test);
+    var retry = monad.flatMap(test, result -> result.isFailure() ? monad.retry(test, monad.scheduleOf().recurs(times)) : monad.pure(result));
+    return new TestCaseEnd<>(name, retry);
   }
 
   @Override
@@ -302,62 +305,12 @@ final class TestCaseImpl<F extends Witness, E, T, R> implements TestCase<F, E, T
   }
 }
 
-final class TestCaseDisabled<F extends Witness, E, T, R> implements TestCase<F, E, T, R> {
-
-  private final Monad<F> monad;
-  private final String name;
-  private final String reason;
-
-  public TestCaseDisabled(Monad<F> monad, String name, String reason) {
-    this.monad = checkNonNull(monad);
-    this.name = checkNonEmpty(name);
-    this.reason = checkNonEmpty(reason);
-  }
-
-  @Override
-  public String name() {
-    return name;
-  }
-
-  @Override
-  public Kind<F, TestResult<E, T, R>> run() {
-    return monad.pure(disabled(name, reason));
-  }
-
-  @Override
-  public TestCase<F, E, T, R> disable(String reason) {
-    return this;
-  }
-
-  @Override
-  public TestCase<F, E, T, Tuple2<Duration, R>> timed() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public TestCase<F, E, T, R> retryOnError(int times) {
-    return this;
-  }
-
-  @Override
-  public TestCase<F, E, T, R> retryOnFailure(int times) {
-    return this;
-  }
-
-  @Override
-  public TestCase<F, E, T, R> repeat(int times) {
-    return this;
-  }
-}
-
 final class TestCaseEnd<F extends Witness, E, T, R> implements TestCase<F, E, T, R> {
 
-  private final Monad<F> monad;
   private final String name;
   private final Kind<F, TestResult<E, T, R>> test;
 
-  public TestCaseEnd(Monad<F> monad, String name, Kind<F, TestResult<E, T, R>> test) {
-    this.monad = checkNonNull(monad);
+  public TestCaseEnd(String name, Kind<F, TestResult<E, T, R>> test) {
     this.name = checkNonEmpty(name);
     this.test = checkNonNull(test);
   }
@@ -374,7 +327,7 @@ final class TestCaseEnd<F extends Witness, E, T, R> implements TestCase<F, E, T,
 
   @Override
   public TestCase<F, E, T, R> disable(String reason) {
-    return new TestCaseDisabled<>(monad, name, reason);
+    throw new UnsupportedOperationException();
   }
 
   @Override
