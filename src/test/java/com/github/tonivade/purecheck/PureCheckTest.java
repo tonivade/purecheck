@@ -12,25 +12,25 @@ import org.junit.jupiter.api.Test;
 import com.github.tonivade.purecheck.spec.TaskTestSpec;
 import com.github.tonivade.purefun.effect.Task_;
 
-public class PureCheckTest extends TaskTestSpec<String> {
-  
+class PureCheckTest extends TaskTestSpec<String> {
+
   @Test
   void test() {
-    assertThrows(AssertionError.class, 
+    assertThrows(AssertionError.class,
         () -> pureCheck("test", hello(), bye()).run().assertion());
   }
-  
+
   TestSuite<Task_, String> hello() {
-    return suite("suite 1", 
+    return suite("suite 1",
         it.should("say hello")
           .given("Toni")
           .when(name -> "Hello " + name)
           .then(equalsTo("Hello Toni"))
         );
   }
-  
+
   TestSuite<Task_, String> bye() {
-    return suite("suite 2", 
+    return suite("suite 2",
         it.should("say goodbye")
           .given("Toni")
           .when(name -> "Goodbye " + name)

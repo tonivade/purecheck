@@ -22,15 +22,15 @@ import com.github.tonivade.purefun.typeclasses.Runtime;
 public abstract class TestSpec<F extends Witness, E> {
 
   protected final TestFactory<F> it;
-  
+
   private final Runtime<F> runtime;
   private final Applicative<F> applicative;
   private final Monad<F> monad;
-  
+
   protected TestSpec(Class<F> type) {
     this(new Instance<>(type) { });
   }
-  
+
   protected TestSpec(Instance<F> instance) {
     this(instance.runtime(), instance.monadDefer(), instance.applicative());
   }
@@ -41,23 +41,23 @@ public abstract class TestSpec<F extends Witness, E> {
     this.monad = checkNonNull(monad);
     this.it = TestFactory.factory(monad);
   }
-  
+
   @SafeVarargs
   protected final TestSuite<F, E> suite(
-      String name, TestCase<F, E, ?> test, TestCase<F, E, ?>... tests) {
+      String name, TestCase<F, E, ?, ?> test, TestCase<F, E, ?, ?>... tests) {
     return new TestSuite<>(parallel(), name, NonEmptyList.of(test, tests)) {
       @Override
       public TestSuite.Report<E> run() {
         return runtime.run(runK());
       }
-      
+
       @Override
       public Future<TestSuite.Report<E>> parRun(Executor executor) {
         return runtime.parRun(runParK(), executor);
       }
     };
   }
-  
+
   @SafeVarargs
   protected final PureCheck<F, E> pureCheck(
       String name, TestSuite<F, E> suite, TestSuite<F, E>... suites) {
@@ -66,7 +66,7 @@ public abstract class TestSpec<F extends Witness, E> {
       public PureCheck.Report<E> run() {
         return runtime.run(runK());
       }
-      
+
       @Override
       public Future<PureCheck.Report<E>> parRun(Executor executor) {
         return runtime.parRun(runParK(), executor);
