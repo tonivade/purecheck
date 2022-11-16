@@ -26,6 +26,7 @@ import com.github.tonivade.purefun.Tuple;
 import com.github.tonivade.purefun.Tuple2;
 import com.github.tonivade.purefun.Validator;
 import com.github.tonivade.purefun.Witness;
+import com.github.tonivade.purefun.data.Sequence;
 import com.github.tonivade.purefun.type.Either;
 import com.github.tonivade.purefun.type.Validation;
 import com.github.tonivade.purefun.type.Validation.Result;
@@ -58,7 +59,7 @@ public sealed interface TestCase<F extends Witness, E, T, R> {
 
   TestCase<F, E, T, R> retryOnFailure(int times);
 
-  TestCase<F, E, T, R> repeat(int times);
+  PropertyTestCase<F, E, T, R> repeat(int times);
 
   /**
    * It returns a builder to create a new test case
@@ -290,12 +291,12 @@ final class TestCaseImpl<F extends Witness, E, T, R> implements TestCase<F, E, T
   }
 
   @Override
-  public TestCase<F, E, T, R> repeat(int times) {
+  public PropertyTestCase<F, E, T, R> repeat(int times) {
     if (times > 0) {
-      var repeat = when.andThen(test -> monad.repeat(test, monad.scheduleOf().<R>recurs(times).zipRight(monad.scheduleOf().identity())));
-      return new TestCaseImpl<>(monad, name, caller, given, repeat, then);
+      Kind<F, Sequence<TestResult<E, T, R>>> repeat = monad.repeat(run(), monad.scheduleOf().<TestResult<E, T, R>>recurs(times).zipRight(monad.scheduleOf().identity()).collectAll());
+      return new PropertyTestCaseImpl<>(monad, name, repeat);
     }
-    return this;
+    return null;
   }
 
   private static <E, T, R> TestResult<E, T, R> fold(String name, T input, StackFrame caller,
@@ -348,7 +349,7 @@ final class TestCaseEnd<F extends Witness, E, T, R> implements TestCase<F, E, T,
 
   @Override
   public TestCase<F, E, T, R> retryOnError(int times) {
-    return this;
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -361,7 +362,7 @@ final class TestCaseEnd<F extends Witness, E, T, R> implements TestCase<F, E, T,
   }
 
   @Override
-  public TestCase<F, E, T, R> repeat(int times) {
-    return this;
+  public PropertyTestCase<F, E, T, R> repeat(int times) {
+    throw new UnsupportedOperationException();
   }
 }

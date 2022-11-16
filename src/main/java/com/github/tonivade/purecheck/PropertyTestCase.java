@@ -1,0 +1,50 @@
+/*
+ * Copyright (c) 2020-2022, Antonio Gabriel Muñoz Conejo <antoniogmc at gmail dot com>
+ * Distributed under the terms of the MIT License
+ */
+package com.github.tonivade.purecheck;
+
+import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
+import static com.github.tonivade.purefun.Precondition.checkNonNull;
+import static com.github.tonivade.purefun.data.Sequence.listOf;
+import com.github.tonivade.purefun.Kind;
+import com.github.tonivade.purefun.Witness;
+import com.github.tonivade.purefun.data.Sequence;
+import com.github.tonivade.purefun.typeclasses.Monad;
+
+public interface PropertyTestCase<F extends Witness, E, T, R> {
+
+  String name();
+
+  Kind<F, Sequence<TestResult<E, T, R>>> run();
+
+  PropertyTestCase<F, E, T, R> disable(String reason);
+}
+
+final class PropertyTestCaseImpl<F extends Witness, E, T, R> implements PropertyTestCase<F, E, T, R> {
+
+  private final Monad<F> monad;
+  private final String name;
+  private final Kind<F, Sequence<TestResult<E, T, R>>> test;
+
+  public PropertyTestCaseImpl(Monad<F> monad, String name, Kind<F, Sequence<TestResult<E, T, R>>> test) {
+    this.monad = checkNonNull(monad);
+    this.name = checkNonEmpty(name);
+    this.test = checkNonNull(test);
+  }
+
+  @Override
+  public String name() {
+    return name;
+  }
+
+  @Override
+  public Kind<F, Sequence<TestResult<E, T, R>>> run() {
+    return test;
+  }
+
+  @Override
+  public PropertyTestCase<F, E, T, R> disable(String reason) {
+    return new PropertyTestCaseImpl<>(monad, name, monad.pure(listOf(TestResult.disabled(name, reason))));
+  }
+}

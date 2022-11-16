@@ -83,11 +83,12 @@ class HelloTest extends IOTestSpec<String> {
     when(task.get()).thenReturn("Hello Toni");
 
     var result =
-        suite("some tests suite",
+        properties("some tests suite",
             it.should("reapeat")
-              .given(IO.task(task))
-              .whenK(identity())
-              .then(equalsTo("Hello Toni")).repeat(3)
+              .given(Generator.randomInt())
+              .whenK(i -> IO.task(task).map(s -> s + i))
+              .then(startsWith("Hello Toni"))
+              .repeat(3)
             ).run();
 
     verify(task, times(4)).get();

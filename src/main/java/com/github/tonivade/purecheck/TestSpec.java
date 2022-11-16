@@ -59,6 +59,22 @@ public abstract class TestSpec<F extends Witness, E> {
   }
 
   @SafeVarargs
+  protected final PropertyTestSuite<F, E> properties(
+      String name, PropertyTestCase<F, E, ?, ?> test, PropertyTestCase<F, E, ?, ?>... tests) {
+    return new PropertyTestSuite<>(parallel(), name, NonEmptyList.of(test, tests)) {
+      @Override
+      public PropertyTestSuite.Report<E> run() {
+        return runtime.run(runK());
+      }
+
+      @Override
+      public Future<PropertyTestSuite.Report<E>> parRun(Executor executor) {
+        return runtime.parRun(runParK(), executor);
+      }
+    };
+  }
+
+  @SafeVarargs
   protected final PureCheck<F, E> pureCheck(
       String name, TestSuite<F, E> suite, TestSuite<F, E>... suites) {
     return new PureCheck<>(parallel(), name, NonEmptyList.of(suite, suites)) {
