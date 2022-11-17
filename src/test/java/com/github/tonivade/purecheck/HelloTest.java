@@ -4,14 +4,14 @@
  */
 package com.github.tonivade.purecheck;
 
+import static com.github.tonivade.purecheck.Generator.randomInt;
 import static com.github.tonivade.purefun.Function1.identity;
 import static com.github.tonivade.purefun.Validator.endsWith;
 import static com.github.tonivade.purefun.Validator.equalsTo;
 import static com.github.tonivade.purefun.Validator.instanceOf;
 import static com.github.tonivade.purefun.Validator.startsWith;
 import static java.lang.Thread.currentThread;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,9 +24,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.github.tonivade.purecheck.spec.IOTestSpec;
+import com.github.tonivade.purefun.Function1;
 import com.github.tonivade.purefun.Producer;
 import com.github.tonivade.purefun.Unit;
 import com.github.tonivade.purefun.monad.IO;
+import com.github.tonivade.purefun.type.Option;
+import com.github.tonivade.purefun.type.Option_;
+import com.github.tonivade.purefun.typeclasses.Instances;
 
 @ExtendWith(MockitoExtension.class)
 class HelloTest extends IOTestSpec<String> {
@@ -191,6 +195,32 @@ class HelloTest extends IOTestSpec<String> {
             ).run();
 
     System.out.println(result);
+  }
+
+  @Test
+  void functorLaws() {
+    var functor = Instances.<Option_>functor();
+
+    Function1<Integer, String> f = String::valueOf;
+    Function1<String, Integer> g = String::length;
+
+    var suite = properties("functor laws",
+
+      it.should("prove identity law")
+              .given(randomInt().liftOption())
+              .when(value -> functor.map(value, identity()))
+              .verify(Option<Integer>::equals)
+              .repeat(100),
+
+            it.should("prove composition law")
+              .given(randomInt().liftOption())
+              .when(value -> functor.map(functor.map(value, f), g))
+              .verify((value, result) -> functor.map(value, f.andThen(g)).equals(result))
+              .repeat(100)
+
+      );
+
+    suite.run().assertion();
   }
 
   private static IO<String> hello(String name) {
