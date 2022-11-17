@@ -85,17 +85,17 @@ class HelloTest extends IOTestSpec<String> {
       return ThreadLocalRandom.current().nextInt();
     });
 
-    var result =
-        properties("some tests suite",
+    int times = 10;
+    var result = properties("some property tests suite",
             it.should("reapeat")
               .given(() -> generator.get())
               .whenK(i -> IO.task(task).map(s -> s + i))
-              .then(startsWith("Hello Toni"))
-              .repeat(1)
+              .verify((input, output) -> output.startsWith("Hello Toni") && output.endsWith("" + input))
+              .repeat(times)
             ).run();
 
-    verify(task, times(1)).get();
-    verify(generator, times(1)).get();
+    verify(task, times(times)).get();
+    verify(generator, times(times)).get();
 
     System.out.println(result);
   }

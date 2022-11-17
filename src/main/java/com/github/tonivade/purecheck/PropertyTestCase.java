@@ -4,6 +4,7 @@
  */
 package com.github.tonivade.purecheck;
 
+import static com.github.tonivade.purefun.Function1.identity;
 import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
 import static com.github.tonivade.purefun.data.Sequence.listOf;
@@ -16,7 +17,7 @@ public interface PropertyTestCase<F extends Witness, E, T, R> {
 
   String name();
 
-  Kind<F, Sequence<TestResult<E, T, R>>> run();
+  Kind<F, TestSuite.Report<E>> run();
 
   PropertyTestCase<F, E, T, R> disable(String reason);
 }
@@ -39,8 +40,8 @@ final class PropertyTestCaseImpl<F extends Witness, E, T, R> implements Property
   }
 
   @Override
-  public Kind<F, Sequence<TestResult<E, T, R>>> run() {
-    return test;
+  public Kind<F, TestSuite.Report<E>> run() {
+    return monad.map(test, xs -> new TestSuite.Report<E>(name, xs.map(identity())));
   }
 
   @Override
