@@ -30,6 +30,7 @@ import com.github.tonivade.purefun.data.Sequence;
 import com.github.tonivade.purefun.type.Either;
 import com.github.tonivade.purefun.type.Validation;
 import com.github.tonivade.purefun.type.Validation.Result;
+import com.github.tonivade.purefun.typeclasses.For;
 import com.github.tonivade.purefun.typeclasses.Monad;
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
 
@@ -249,11 +250,11 @@ final class TestCaseImpl<F extends Witness, E, T, R> implements TestCase<F, E, T
    */
   @Override
   public Kind<F, TestResult<E, T, R>> run() {
-    return monad.flatMap(monad.later(given.liftOption()),
-      input -> {
-        var attempt = monad.attempt(when.apply(input.getOrElseNull()));
-        return monad.map(attempt, result -> fold(name, input.getOrElseNull(), caller, result, then));
-      });
+    return For.with(monad)
+      .then(monad.later(given.liftOption()))
+      .flatMap(input -> monad.attempt(when.apply(input.getOrElseNull())))
+      .yield((input, result) -> fold(name, input.getOrElseNull(), caller, result, then));
+
   }
 
   @Override
