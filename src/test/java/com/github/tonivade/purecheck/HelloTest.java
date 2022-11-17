@@ -17,7 +17,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
-
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -79,19 +79,23 @@ class HelloTest extends IOTestSpec<String> {
   }
 
   @Test
-  void repeat(@Mock Producer<String> task) {
+  void repeat(@Mock Producer<String> task, @Mock Producer<Integer> generator) {
     when(task.get()).thenReturn("Hello Toni");
+    when(generator.get()).thenAnswer(args -> {
+      return ThreadLocalRandom.current().nextInt();
+    });
 
     var result =
         properties("some tests suite",
             it.should("reapeat")
-              .given(Generator.randomInt())
+              .given(() -> generator.get())
               .whenK(i -> IO.task(task).map(s -> s + i))
               .then(startsWith("Hello Toni"))
-              .repeat(3)
+              .repeat(1)
             ).run();
 
-    verify(task, times(4)).get();
+    verify(task, times(1)).get();
+    verify(generator, times(1)).get();
 
     System.out.println(result);
   }
