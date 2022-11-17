@@ -7,7 +7,6 @@ package com.github.tonivade.purecheck;
 import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
 import static com.github.tonivade.purefun.typeclasses.Instances.traverse;
-
 import java.util.concurrent.Executor;
 
 import com.github.tonivade.purefun.Kind;
@@ -20,7 +19,7 @@ import com.github.tonivade.purefun.data.Sequence_;
 import com.github.tonivade.purefun.typeclasses.Parallel;
 
 /**
- * It defines a test suite that is composed by a non empty collection of test cases
+ * It defines a property test suite that is composed by a non empty collection of test cases
  *
  * It allows to run the tests serialized one by one with {@code #run()} of in parallel with {@code #parRun(Executor)}
  *
@@ -29,11 +28,11 @@ import com.github.tonivade.purefun.typeclasses.Parallel;
  * @param <F> type of the kind
  * @param <E> type of the error
  */
-public abstract class TestSuite<F extends Witness, E> {
+public abstract class PropertyTestSuite<F extends Witness, E> {
 
   private final Parallel<F, F> parallel;
   private final String name;
-  private final Sequence<TestCase<F, E, ?, ?>> tests;
+  private final Sequence<PropertyTestCase<F, E, ?, ?>> tests;
 
   /**
    * It will throw {@code NullPointerException} if the tests is null
@@ -42,7 +41,7 @@ public abstract class TestSuite<F extends Witness, E> {
    * @param name name of the suite
    * @param tests list of tests
    */
-  protected TestSuite(Parallel<F, F> parallel, String name, NonEmptyList<TestCase<F, E, ?, ?>> tests) {
+  protected PropertyTestSuite(Parallel<F, F> parallel, String name, NonEmptyList<PropertyTestCase<F, E, ?, ?>> tests) {
     this.parallel = checkNonNull(parallel);
     this.name = checkNonEmpty(name);
     this.tests = checkNonNull(tests);
@@ -54,18 +53,18 @@ public abstract class TestSuite<F extends Witness, E> {
    * @return the result of the suite
    */
   public Kind<F, Report<E>> runK() {
-    var sequence = traverse(Sequence_.class).sequence(parallel.monad(), tests.map(TestCase::run));
+    var sequence = traverse(Sequence_.class).sequence(parallel.monad(), tests.map(PropertyTestCase::run));
 
-    Kind<F, Sequence<TestResult<E, ?, ?>>> results = parallel.monad().map(sequence, SequenceOf::narrowK);
+    var results = parallel.monad().map(sequence, SequenceOf::narrowK);
 
     return parallel.monad().map(results, xs -> new Report<>(name, xs));
 
   }
 
   public Kind<F, Report<E>> runParK() {
-    var sequence = parallel.parSequence(traverse(Sequence_.class), tests.map(TestCase::run));
+    var sequence = parallel.parSequence(traverse(Sequence_.class), tests.map(PropertyTestCase::run));
 
-    Kind<F, Sequence<TestResult<E, ?, ?>>> results = parallel.monad().map(sequence, SequenceOf::narrowK);
+    var results = parallel.monad().map(sequence, SequenceOf::narrowK);
 
     return parallel.monad().map(results, xs -> new Report<>(name, xs));
   }
@@ -104,20 +103,24 @@ public abstract class TestSuite<F extends Witness, E> {
   public static class Report<E> {
 
     private final String name;
-    private final Sequence<TestResult<E, ?, ?>> results;
+    private final Sequence<TestSuite.Report<E>> reports;
 
-    public Report(String name, Sequence<TestResult<E, ?, ?>> results) {
+    public Report(String name, Sequence<TestSuite.Report<E>> reports) {
       this.name = checkNonEmpty(name);
-      this.results = checkNonNull(results);
+      this.reports = checkNonNull(reports);
     }
 
     public void assertion() {
-      results.forEach(TestResult::assertion);
+      try {
+        reports.forEach(TestSuite.Report::assertion);
+      } finally {
+        System.out.println(this);
+      }
     }
 
     @Override
     public String toString() {
-      return results.join("\n- ", "## " + name + "\n\n- ", "\n");
+      return reports.join("\n\n", "# " + name + "\n\n", "\n");
     }
   }
 }

@@ -16,21 +16,20 @@ import java.io.UncheckedIOException;
 import java.lang.StackWalker.StackFrame;
 
 import com.github.tonivade.purefun.Function1;
-import com.github.tonivade.purefun.HigherKind;
 import com.github.tonivade.purefun.Recoverable;
 import com.github.tonivade.purefun.type.Either;
 import com.github.tonivade.purefun.type.Validation.Result;
 
 /**
  * it defines the result of a test case, given a name, a result and a value.
- * 
+ *
  * @author tonivade
  *
  * @param <E> type of the error
- * @param <T> type of the value
+ * @param <T> type of the input value
+ * @param <R> type of the otput value
  */
-@HigherKind
-public sealed interface TestResult<E, T> extends TestResultOf<E, T> {
+public sealed interface TestResult<E, T, R> {
 
   default boolean isSuccess() {
     return false;
@@ -50,44 +49,44 @@ public sealed interface TestResult<E, T> extends TestResultOf<E, T> {
 
   void assertion();
 
-  <R> TestResult<E, R> map(Function1<T, R> mapper);
-  
-  static <E, T> TestResult<E, T> success(String name, T value) {
-    return new Success<>(name, Either.right(value));
-  }
-  
-  static <E, T> TestResult<E, T> success(String name, Throwable error) {
-    return new Success<>(name, Either.left(error));
-  }
-  
-  static <E, T> TestResult<E, T> failure(String name, StackFrame caller, T value, Result<E> result) {
-    return new Failure<>(name, caller, Either.right(value), result);
-  }
-  
-  static <E, T> TestResult<E, T> failure(String name, StackFrame caller, Throwable error, Result<E> result) {
-    return new Failure<>(name, caller, Either.left(error), result);
-  }
-  
-  static <E, T> TestResult<E, T> error(String name, StackFrame caller, Throwable error) {
-    return new Error<>(name, caller, Either.right(error));
-  }
-  
-  static <E, T> TestResult<E, T> error(String name, StackFrame caller, T error) {
-    return new Error<>(name, caller, Either.left(error));
+  <S> TestResult<E, T, S> map(Function1<R, S> mapper);
+
+  static <E, T, R> TestResult<E, T, R> success(String name, T input, R value) {
+    return new Success<>(name, input, Either.right(value));
   }
 
-  static <E, T> TestResult<E, T> disabled(String name, String reason) {
+  static <E, T, R> TestResult<E, T, R> success(String name, T input, Throwable error) {
+    return new Success<>(name, input, Either.left(error));
+  }
+
+  static <E, T, R> TestResult<E, T, R> failure(String name, T input, StackFrame caller, R value, Result<E> result) {
+    return new Failure<>(name, input, caller, Either.right(value), result);
+  }
+
+  static <E, T, R> TestResult<E, T, R> failure(String name, T input, StackFrame caller, Throwable error, Result<E> result) {
+    return new Failure<>(name, input, caller, Either.left(error), result);
+  }
+
+  static <E, T, R> TestResult<E, T, R> error(String name, T input, StackFrame caller, Throwable error) {
+    return new Error<>(name, input, caller, Either.right(error));
+  }
+
+  static <E, T, R> TestResult<E, T, R> error(String name, T input, StackFrame caller, R error) {
+    return new Error<>(name, input, caller, Either.left(error));
+  }
+
+  static <E, T, R> TestResult<E, T, R> disabled(String name, String reason) {
     return new Disabled<>(name, reason);
   }
 
-  record Success<E, T>(String name, Either<Throwable, T> value) implements TestResult<E, T>, Serializable {
+  record Success<E, T, R>(String name, T input, Either<Throwable, R> value) implements TestResult<E, T, R>, Serializable {
 
     private static final long serialVersionUID = 2612477493587755025L;
 
     /**
      * it will throw a {@code NullPointerException} if any of the params are null
      * and {@code IllegalArgumentException} if name is a empty String.
-     * 
+     *
      * @param name name of the test, non empty value
      * @param value result of the operation under test
      */
@@ -107,25 +106,25 @@ public sealed interface TestResult<E, T> extends TestResultOf<E, T> {
     }
 
     @Override
-    public <R> TestResult<E, R> map(Function1<T, R> mapper) {
-      return new Success<>(name, value.map(mapper::apply));
+    public <S> TestResult<E, T, S> map(Function1<R, S> mapper) {
+      return new Success<>(name, input, value.map(mapper::apply));
     }
 
     @Override
     public String toString() {
-      return String.format("it should '%s' SUCCESS: '%s'", 
-          name, value.fold(Object::toString, Object::toString));
+      return String.format("it should '%s' with input '%s' SUCCESS: '%s'",
+          name, input, value.fold(Object::toString, Object::toString));
     }
   }
 
-  record Failure<E, T>(String name, StackFrame caller, Either<Throwable, T> value, Result<E> result) implements TestResult<E, T>, Serializable {
+  record Failure<E, T, R>(String name, T input, StackFrame caller, Either<Throwable, R> value, Result<E> result) implements TestResult<E, T, R>, Serializable {
 
     private static final long serialVersionUID = 4834239536246492448L;
 
     /**
      * it will throw a {@code NullPointerException} if any of the params are null
      * and {@code IllegalArgumentException} if name is a empty String.
-     * 
+     *
      * @param name name of the test, non empty value
      * @param caller stack frame of the caller
      * @param value result of the operation under test
@@ -152,25 +151,25 @@ public sealed interface TestResult<E, T> extends TestResultOf<E, T> {
     }
 
     @Override
-    public <R> TestResult<E, R> map(Function1<T, R> mapper) {
-      return new Failure<>(name, caller, value.map(mapper::apply), result);
+    public <S> TestResult<E, T, S> map(Function1<R, S> mapper) {
+      return new Failure<>(name, input, caller, value.map(mapper::apply), result);
     }
 
     @Override
     public String toString() {
-      return String.format("test '%s' at '%s' FAILURE: expected '%s' but was '%s'", 
-          name, caller, result.join(","), value.fold(Object::toString, Object::toString));
+      return String.format("test '%s' at '%s' with input '%s' FAILURE: expected '%s' but was '%s'",
+          name, caller, input, result.join(","), value.fold(Object::toString, Object::toString));
     }
   }
 
-  record Error<E, T>(String name, StackFrame caller, Either<T, Throwable> error) implements TestResult<E, T>, Recoverable, Serializable {
+  record Error<E, T, R>(String name, T input, StackFrame caller, Either<R, Throwable> error) implements TestResult<E, T, R>, Recoverable, Serializable {
 
     private static final long serialVersionUID = 4181923995414226773L;
 
     /**
      * it will throw a {@code NullPointerException} if any of the params are null
      * and {@code IllegalArgumentException} if name is a empty String.
-     * 
+     *
      * @param name name of the test, non empty value
      * @param caller stack frame of the caller
      * @param error error captured by the test
@@ -180,7 +179,7 @@ public sealed interface TestResult<E, T> extends TestResultOf<E, T> {
       checkNonNull(caller);
       checkNonNull(error);
     }
-    
+
     @Override
     public boolean isError() {
       return true;
@@ -192,14 +191,14 @@ public sealed interface TestResult<E, T> extends TestResultOf<E, T> {
     }
 
     @Override
-    public <R> TestResult<E, R> map(Function1<T, R> mapper) {
-      return new Error<>(name, caller, error.mapLeft(mapper::apply));
+    public <S> TestResult<E, T, S> map(Function1<R, S> mapper) {
+      return new Error<>(name, input, caller, error.mapLeft(mapper::apply));
     }
 
     @Override
     public String toString() {
-      return String.format("test '%s' at '%s' ERROR: %s", 
-          name, caller, error.fold(Object::toString, Error::full));
+      return String.format("test '%s' at '%s' with input '%s' ERROR: %s",
+          name, caller, input, error.fold(Object::toString, Error::full));
     }
 
     private static String full(Throwable error) {
@@ -214,7 +213,7 @@ public sealed interface TestResult<E, T> extends TestResultOf<E, T> {
     }
   }
 
-  record Disabled<E, T>(String name, String reason) implements TestResult<E, T>, Serializable {
+  record Disabled<E, T, R>(String name, String reason) implements TestResult<E, T, R>, Serializable {
 
     private static final long serialVersionUID = -8661817362831938094L;
 
@@ -241,7 +240,7 @@ public sealed interface TestResult<E, T> extends TestResultOf<E, T> {
     }
 
     @Override
-    public <R> TestResult<E, R> map(Function1<T, R> mapper) {
+    public <S> TestResult<E, T, S> map(Function1<R, S> mapper) {
       return new Disabled<>(name, reason);
     }
 

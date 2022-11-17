@@ -55,6 +55,7 @@ class NonEmptyStringTest extends UIOTestSpec<String> {
           .given(NonEmptyString.of("hola mundo"))
           .noop()
           .then(notEqualsTo(NonEmptyString.of("HOLA MUNDO")))
+
   );
 
   @Test
@@ -73,7 +74,7 @@ class NonEmptyStringTest extends UIOTestSpec<String> {
   @Test
   void serial() {
     suite.run().assertion();
-    
+
     System.out.println(suite.run());
   }
 
