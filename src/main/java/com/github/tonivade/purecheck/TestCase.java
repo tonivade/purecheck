@@ -253,8 +253,7 @@ final class TestCaseImpl<F extends Witness, E, T, R> implements TestCase<F, E, T
     return For.with(monad)
       .then(monad.later(given.liftOption()))
       .flatMap(input -> monad.attempt(when.apply(input.getOrElseNull())))
-      .yield((input, result) -> fold(name, input.getOrElseNull(), caller, result, then));
-
+      .apply((input, result) -> fold(name, input.getOrElseNull(), caller, result, then));
   }
 
   @Override
