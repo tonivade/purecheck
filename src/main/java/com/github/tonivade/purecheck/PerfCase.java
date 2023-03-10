@@ -8,10 +8,12 @@ import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.Precondition.checkNonNull;
 import static com.github.tonivade.purefun.Unit.unit;
 import static com.github.tonivade.purefun.data.Sequence.listOf;
-import static com.github.tonivade.purefun.typeclasses.Instances.monadDefer;
 
 import java.time.Duration;
 
+import com.github.tonivade.purecheck.spec.IOPerfCase;
+import com.github.tonivade.purecheck.spec.TaskPerfCase;
+import com.github.tonivade.purecheck.spec.UIOPerfCase;
 import com.github.tonivade.purefun.Kind;
 import com.github.tonivade.purefun.Producer;
 import com.github.tonivade.purefun.Tuple;
@@ -22,11 +24,8 @@ import com.github.tonivade.purefun.data.ImmutableArray;
 import com.github.tonivade.purefun.data.ImmutableMap;
 import com.github.tonivade.purefun.data.Sequence;
 import com.github.tonivade.purefun.effect.Task;
-import com.github.tonivade.purefun.effect.Task_;
 import com.github.tonivade.purefun.effect.UIO;
-import com.github.tonivade.purefun.effect.UIO_;
 import com.github.tonivade.purefun.monad.IO;
-import com.github.tonivade.purefun.monad.IO_;
 import com.github.tonivade.purefun.type.Option;
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
 import com.github.tonivade.purefun.typeclasses.Schedule;
@@ -39,7 +38,7 @@ public final class PerfCase<F extends Witness, T> {
   private final Kind<F, T> task;
   private final Kind<F, Unit> warmup;
 
-  private PerfCase(String name, MonadDefer<F> monad, Kind<F, T> task, Kind<F, Unit> warmup) {
+  public PerfCase(String name, MonadDefer<F> monad, Kind<F, T> task, Kind<F, Unit> warmup) {
     this.name = checkNonEmpty(name);
     this.monad = checkNonNull(monad);
     this.task = checkNonNull(task);
@@ -107,28 +106,28 @@ public final class PerfCase<F extends Witness, T> {
     return Tuple.of(percentile, array.get((int) Math.round(percentile / 100.0 * (array.size() - 1))));
   }
   
-  public static <T> PerfCase<IO_, T> ioPerfCase(String name, Producer<T> task) {
-    return perfCase(name, monadDefer(IO_.class), task);
+  public static <T> IOPerfCase<T> ioPerfCase(String name, Producer<T> task) {
+    return new IOPerfCase<>(name, IO.task(task));
   }
   
-  public static <T> PerfCase<IO_, T> ioPerfCase(String name, IO<T> task) {
-    return perfCase(name, monadDefer(IO_.class), task);
+  public static <T> IOPerfCase<T> ioPerfCase(String name, IO<T> task) {
+    return new IOPerfCase<>(name, task);
   }
   
-  public static <T> PerfCase<UIO_, T> uioPerfCase(String name, Producer<T> task) {
-    return perfCase(name, monadDefer(UIO_.class), task);
+  public static <T> UIOPerfCase<T> uioPerfCase(String name, Producer<T> task) {
+    return new UIOPerfCase<>(name, UIO.task(task));
   }
   
-  public static <T> PerfCase<UIO_, T> uioPerfCase(String name, UIO<T> task) {
-    return perfCase(name, monadDefer(UIO_.class), task);
+  public static <T> UIOPerfCase<T> uioPerfCase(String name, UIO<T> task) {
+    return new UIOPerfCase<>(name, task);
   }
   
-  public static <T> PerfCase<Task_, T> taskPerfCase(String name, Producer<T> task) {
-    return perfCase(name, monadDefer(Task_.class), task);
+  public static <T> TaskPerfCase<T> taskPerfCase(String name, Producer<T> task) {
+    return new TaskPerfCase<>(name, Task.task(task));
   }
   
-  public static <T> PerfCase<Task_, T> taskPerfCase(String name, Task<T> task) {
-    return perfCase(name, monadDefer(Task_.class), task);
+  public static <T> TaskPerfCase<T> taskPerfCase(String name, Task<T> task) {
+    return new TaskPerfCase<>(name, task);
   }
   
   public static <F extends Witness, T> PerfCase<F, T> perfCase(String name, MonadDefer<F> monad, Producer<T> task) {
