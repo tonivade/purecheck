@@ -52,10 +52,10 @@ test {
 }
   
 dependencies {
-  api 'com.github.tonivade:purefun-typeclasses:4.1'
-  implementation 'com.github.tonivade:purefun-monad:4.1'
-  implementation 'com.github.tonivade:purefun-effect:4.1'
-  runtimeOnly 'com.github.tonivade:purefun-instances:4.1'
+  api 'com.github.tonivade:purefun-typeclasses:4.2-SNAPSHOT'
+  implementation 'com.github.tonivade:purefun-monad:4.2-SNAPSHOT'
+  implementation 'com.github.tonivade:purefun-effect:4.2-SNAPSHOT'
+  runtimeOnly 'com.github.tonivade:purefun-instances:4.2-SNAPSHOT'
   testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
   testImplementation 'org.junit.platform:junit-platform-runner:1.10.0'
   testImplementation 'org.mockito:mockito-core:5.4.0'
