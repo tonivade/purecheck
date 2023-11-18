@@ -10,8 +10,8 @@ import static com.github.tonivade.purefun.typeclasses.Instances.traverse;
 
 import java.util.concurrent.Executor;
 
-import com.github.tonivade.purefun.Kind;
-import com.github.tonivade.purefun.Witness;
+import com.github.tonivade.purefun.annotation.Kind;
+import com.github.tonivade.purefun.annotation.Witness;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyList;
 import com.github.tonivade.purefun.data.Sequence;

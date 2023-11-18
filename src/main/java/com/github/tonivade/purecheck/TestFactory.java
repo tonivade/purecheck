@@ -4,7 +4,7 @@
  */
 package com.github.tonivade.purecheck;
 
-import com.github.tonivade.purefun.Witness;
+import com.github.tonivade.purefun.annotation.Witness;
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
 
 public interface TestFactory<F extends Witness> {
