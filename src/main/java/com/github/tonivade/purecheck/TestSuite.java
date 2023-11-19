@@ -20,9 +20,9 @@ import com.github.tonivade.purefun.data.Sequence_;
 import com.github.tonivade.purefun.typeclasses.Parallel;
 
 /**
- * It defines a test suite that is composed by a non empty collection of test cases
+ * <p>It defines a test suite that is composed by a non-empty collection of test cases
  *
- * It allows to run the tests serialized one by one with {@code #run()} of in parallel with {@code #parRun(Executor)}
+ * <p>It allows to run the tests serialized one by one with {@code #run()} of in parallel with {@code #parRun(Executor)}
  *
  * @author tonivade
  *

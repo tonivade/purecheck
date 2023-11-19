@@ -214,16 +214,16 @@ final class TestCaseImpl<F extends Witness, E, T, R> implements TestCase<F, E, T
   private final Either<Validator<Result<E>, Throwable>, Validator<Result<E>, Tuple2<T, R>>> then;
 
   /**
-   * It will throw {@code IllegalArgumentException} if parameters are null or if name is a empty string
+   * It will throw {@code IllegalArgumentException} if parameters are null or if name is an empty string
    *
    * @param monad monad instance for the type F
    * @param name name of the test case
    * @param caller stack frame of the caller
-   * @paran given generator of the input value {@code T} to execute the test
+   * @param given generator of the input value {@code T} to execute the test
    * @param when operation under test thar returns a value {@code R}
    * @param then validation to apply to the result generated
    */
-  protected TestCaseImpl(
+  TestCaseImpl(
       MonadDefer<F> monad,
       String name,
       StackFrame caller,

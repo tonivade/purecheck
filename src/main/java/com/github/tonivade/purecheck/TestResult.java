@@ -11,6 +11,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.StackWalker.StackFrame;
@@ -27,7 +28,7 @@ import com.github.tonivade.purefun.type.Validation.Result;
  *
  * @param <E> type of the error
  * @param <T> type of the input value
- * @param <R> type of the otput value
+ * @param <R> type of the output value
  */
 public sealed interface TestResult<E, T, R> {
 
@@ -81,13 +82,14 @@ public sealed interface TestResult<E, T, R> {
 
   record Success<E, T, R>(String name, T input, Either<Throwable, R> value) implements TestResult<E, T, R>, Serializable {
 
+    @Serial
     private static final long serialVersionUID = 2612477493587755025L;
 
     /**
      * it will throw a {@code NullPointerException} if any of the params are null
-     * and {@code IllegalArgumentException} if name is a empty String.
+     * and {@code IllegalArgumentException} if name is an empty String.
      *
-     * @param name name of the test, non empty value
+     * @param name name of the test, non-empty value
      * @param value result of the operation under test
      */
     public Success {
@@ -119,13 +121,14 @@ public sealed interface TestResult<E, T, R> {
 
   record Failure<E, T, R>(String name, T input, StackFrame caller, Either<Throwable, R> value, Result<E> result) implements TestResult<E, T, R>, Serializable {
 
+    @Serial
     private static final long serialVersionUID = 4834239536246492448L;
 
     /**
      * it will throw a {@code NullPointerException} if any of the params are null
-     * and {@code IllegalArgumentException} if name is a empty String.
+     * and {@code IllegalArgumentException} if name is an empty String.
      *
-     * @param name name of the test, non empty value
+     * @param name name of the test, non-empty value
      * @param caller stack frame of the caller
      * @param value result of the operation under test
      * @param result result of the validation applied to the value
@@ -164,13 +167,14 @@ public sealed interface TestResult<E, T, R> {
 
   record Error<E, T, R>(String name, T input, StackFrame caller, Either<R, Throwable> error) implements TestResult<E, T, R>, Recoverable, Serializable {
 
+    @Serial
     private static final long serialVersionUID = 4181923995414226773L;
 
     /**
      * it will throw a {@code NullPointerException} if any of the params are null
-     * and {@code IllegalArgumentException} if name is a empty String.
+     * and {@code IllegalArgumentException} if name is an empty String.
      *
-     * @param name name of the test, non empty value
+     * @param name name of the test, non-empty value
      * @param caller stack frame of the caller
      * @param error error captured by the test
      */
@@ -205,7 +209,7 @@ public sealed interface TestResult<E, T, R> {
       StringBuilder message = new StringBuilder(String.valueOf(error.getMessage())).append('\n');
       try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
         error.printStackTrace(new PrintStream(output));
-        message.append(new String(output.toByteArray(), UTF_8));
+        message.append(output.toString(UTF_8));
       } catch (IOException e) {
         throw new UncheckedIOException(e);
       }
@@ -215,13 +219,14 @@ public sealed interface TestResult<E, T, R> {
 
   record Disabled<E, T, R>(String name, String reason) implements TestResult<E, T, R>, Serializable {
 
+    @Serial
     private static final long serialVersionUID = -8661817362831938094L;
 
     /**
      * it will throw a {@code NullPointerException} if any of the params are null
-     * and {@code IllegalArgumentException} if name is a empty String.
+     * and {@code IllegalArgumentException} if name is an empty String.
      *
-     * @param name name of the test, non empty value
+     * @param name name of the test, non-empty value
      * @param reason description
      */
     public Disabled {

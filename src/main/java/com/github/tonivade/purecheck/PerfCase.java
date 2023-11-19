@@ -79,7 +79,7 @@ public final class PerfCase<F extends Witness, T> {
 
   private <A> Schedule<F, A, Integer> recurs(int times) {
     ScheduleOf<F> scheduleOf = monad.scheduleOf();
-    return scheduleOf.<A>recurs(times);
+    return scheduleOf.recurs(times);
   }
 
   private static Duration mean(ImmutableArray<Duration> array, Duration total) {
@@ -138,7 +138,7 @@ public final class PerfCase<F extends Witness, T> {
     return new PerfCase<>(name, monad, task, monad.pure(unit()));
   }
   
-  public static record Stats( 
+  public record Stats(
     String name,
     Duration total,
     Duration min,

@@ -41,7 +41,7 @@ final class PropertyTestCaseImpl<F extends Witness, E, T, R> implements Property
 
   @Override
   public Kind<F, TestSuite.Report<E>> run() {
-    return monad.map(test, xs -> new TestSuite.Report<E>(name, xs.map(identity())));
+    return monad.map(test, xs -> new TestSuite.Report<>(name, xs.map(identity())));
   }
 
   @Override
