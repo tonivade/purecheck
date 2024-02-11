@@ -4,8 +4,9 @@
  */
 package com.github.tonivade.purecheck;
 
-import com.github.tonivade.purefun.Producer;
 import java.util.concurrent.ThreadLocalRandom;
+
+import com.github.tonivade.purefun.core.Producer;
 
 public interface Generator<T> extends Producer<T> {
 

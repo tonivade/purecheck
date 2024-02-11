@@ -4,8 +4,8 @@
  */
 package com.github.tonivade.purecheck;
 
-import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
-import static com.github.tonivade.purefun.Precondition.checkNonNull;
+import static com.github.tonivade.purefun.core.Precondition.checkNonEmpty;
+import static com.github.tonivade.purefun.core.Precondition.checkNonNull;
 import static com.github.tonivade.purefun.typeclasses.Instances.traverse;
 import java.util.concurrent.Executor;
 

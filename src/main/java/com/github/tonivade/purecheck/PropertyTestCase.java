@@ -4,9 +4,9 @@
  */
 package com.github.tonivade.purecheck;
 
-import static com.github.tonivade.purefun.Function1.identity;
-import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
-import static com.github.tonivade.purefun.Precondition.checkNonNull;
+import static com.github.tonivade.purefun.core.Function1.identity;
+import static com.github.tonivade.purefun.core.Precondition.checkNonEmpty;
+import static com.github.tonivade.purefun.core.Precondition.checkNonNull;
 import static com.github.tonivade.purefun.data.Sequence.listOf;
 import com.github.tonivade.purefun.Kind;
 import com.github.tonivade.purefun.Witness;

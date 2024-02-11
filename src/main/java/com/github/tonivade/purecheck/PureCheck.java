@@ -4,8 +4,8 @@
  */
 package com.github.tonivade.purecheck;
 
-import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
-import static com.github.tonivade.purefun.Precondition.checkNonNull;
+import static com.github.tonivade.purefun.core.Precondition.checkNonEmpty;
+import static com.github.tonivade.purefun.core.Precondition.checkNonNull;
 import static com.github.tonivade.purefun.typeclasses.Instances.traverse;
 
 import java.util.concurrent.Executor;
@@ -20,33 +20,33 @@ import com.github.tonivade.purefun.data.Sequence_;
 import com.github.tonivade.purefun.typeclasses.Parallel;
 
 public abstract class PureCheck<F extends Witness, E> {
-  
+
   private final Parallel<F, F> parallel;
   private final String name;
   private final NonEmptyList<TestSuite<F, E>> suites;
-  
+
   protected PureCheck(Parallel<F, F> parallel, String name, NonEmptyList<TestSuite<F, E>> suites) {
     this.parallel = checkNonNull(parallel);
     this.name = checkNonEmpty(name);
     this.suites = checkNonNull(suites);
   }
-  
+
   public Kind<F, Report<E>> runK() {
     var sequence = traverse(Sequence_.class).sequence(parallel.monad(), suites.map(TestSuite::runK));
-    
+
     Kind<F, Sequence<TestSuite.Report<E>>> results = parallel.monad().map(sequence, SequenceOf::narrowK);
-    
+
     return parallel.monad().map(results, xs -> new PureCheck.Report<>(name, xs));
   }
-  
+
   public Kind<F, Report<E>> runParK() {
     var sequence = parallel.parSequence(traverse(Sequence_.class), suites.map(TestSuite::runK));
-    
+
     Kind<F, Sequence<TestSuite.Report<E>>> results = parallel.monad().map(sequence, SequenceOf::narrowK);
-    
+
     return parallel.monad().map(results, xs -> new PureCheck.Report<>(name, xs));
   }
-  
+
   public abstract Report<E> run();
 
   public abstract Future<Report<E>> parRun(Executor executor);

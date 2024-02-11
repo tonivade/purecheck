@@ -4,8 +4,8 @@
  */
 package com.github.tonivade.purecheck;
 
-import static com.github.tonivade.purefun.Validator.equalsTo;
-import static com.github.tonivade.purefun.Validator.notEqualsTo;
+import static com.github.tonivade.purefun.core.Validator.equalsTo;
+import static com.github.tonivade.purefun.core.Validator.notEqualsTo;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;

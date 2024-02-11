@@ -5,11 +5,11 @@
 package com.github.tonivade.purecheck;
 
 import static com.github.tonivade.purecheck.Generator.randomInt;
-import static com.github.tonivade.purefun.Function1.identity;
-import static com.github.tonivade.purefun.Validator.endsWith;
-import static com.github.tonivade.purefun.Validator.equalsTo;
-import static com.github.tonivade.purefun.Validator.instanceOf;
-import static com.github.tonivade.purefun.Validator.startsWith;
+import static com.github.tonivade.purefun.core.Function1.identity;
+import static com.github.tonivade.purefun.core.Validator.endsWith;
+import static com.github.tonivade.purefun.core.Validator.equalsTo;
+import static com.github.tonivade.purefun.core.Validator.instanceOf;
+import static com.github.tonivade.purefun.core.Validator.startsWith;
 import static java.lang.Thread.currentThread;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.times;
@@ -24,9 +24,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.github.tonivade.purecheck.spec.IOTestSpec;
-import com.github.tonivade.purefun.Function1;
-import com.github.tonivade.purefun.Producer;
-import com.github.tonivade.purefun.Unit;
+import com.github.tonivade.purefun.core.Function1;
+import com.github.tonivade.purefun.core.Producer;
+import com.github.tonivade.purefun.core.Unit;
 import com.github.tonivade.purefun.monad.IO;
 import com.github.tonivade.purefun.type.Option;
 import com.github.tonivade.purefun.type.Option_;

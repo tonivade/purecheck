@@ -4,8 +4,8 @@
  */
 package com.github.tonivade.purecheck;
 
-import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
-import static com.github.tonivade.purefun.Precondition.checkNonNull;
+import static com.github.tonivade.purefun.core.Precondition.checkNonEmpty;
+import static com.github.tonivade.purefun.core.Precondition.checkNonNull;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayOutputStream;
@@ -16,8 +16,8 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.StackWalker.StackFrame;
 
-import com.github.tonivade.purefun.Function1;
-import com.github.tonivade.purefun.Recoverable;
+import com.github.tonivade.purefun.core.Function1;
+import com.github.tonivade.purefun.core.Recoverable;
 import com.github.tonivade.purefun.type.Either;
 import com.github.tonivade.purefun.type.Validation.Result;
 

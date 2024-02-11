@@ -4,9 +4,9 @@
  */
 package com.github.tonivade.purecheck;
 
-import static com.github.tonivade.purefun.Precondition.checkNonEmpty;
-import static com.github.tonivade.purefun.Precondition.checkNonNull;
-import static com.github.tonivade.purefun.Unit.unit;
+import static com.github.tonivade.purefun.core.Precondition.checkNonEmpty;
+import static com.github.tonivade.purefun.core.Precondition.checkNonNull;
+import static com.github.tonivade.purefun.core.Unit.unit;
 import static com.github.tonivade.purefun.data.Sequence.listOf;
 
 import java.time.Duration;
@@ -15,11 +15,11 @@ import com.github.tonivade.purecheck.spec.IOPerfCase;
 import com.github.tonivade.purecheck.spec.TaskPerfCase;
 import com.github.tonivade.purecheck.spec.UIOPerfCase;
 import com.github.tonivade.purefun.Kind;
-import com.github.tonivade.purefun.Producer;
-import com.github.tonivade.purefun.Tuple;
-import com.github.tonivade.purefun.Tuple2;
-import com.github.tonivade.purefun.Unit;
 import com.github.tonivade.purefun.Witness;
+import com.github.tonivade.purefun.core.Producer;
+import com.github.tonivade.purefun.core.Tuple;
+import com.github.tonivade.purefun.core.Tuple2;
+import com.github.tonivade.purefun.core.Unit;
 import com.github.tonivade.purefun.data.ImmutableArray;
 import com.github.tonivade.purefun.data.ImmutableMap;
 import com.github.tonivade.purefun.data.Sequence;
@@ -32,7 +32,7 @@ import com.github.tonivade.purefun.typeclasses.Schedule;
 import com.github.tonivade.purefun.typeclasses.Schedule.ScheduleOf;
 
 public final class PerfCase<F extends Witness, T> {
-  
+
   private final String name;
   private final MonadDefer<F> monad;
   private final Kind<F, T> task;
@@ -44,11 +44,11 @@ public final class PerfCase<F extends Witness, T> {
     this.task = checkNonNull(task);
     this.warmup = checkNonNull(warmup);
   }
-  
+
   public PerfCase<F, T> warmup(int times) {
     return new PerfCase<>(name, monad, task, monad.repeat(task, this.<T>recurs(times).unit()));
   }
-  
+
   public Kind<F, Stats> run(int times) {
     var timed = monad.map(monad.timed(task), Tuple2::get1);
     var repeat = monad.repeat(timed, recursAndCollect(times));
@@ -101,43 +101,43 @@ public final class PerfCase<F extends Witness, T> {
   private static Duration min(ImmutableArray<Duration> array) {
     return array.foldLeft(Duration.ofDays(365), (d1, d2) -> d1.compareTo(d2) > 0 ? d2 : d1);
   }
-  
+
   private static Tuple2<Double, Duration> percentile(double percentile, ImmutableArray<Duration> array) {
     return Tuple.of(percentile, array.get((int) Math.round(percentile / 100.0 * (array.size() - 1))));
   }
-  
+
   public static <T> IOPerfCase<T> ioPerfCase(String name, Producer<T> task) {
     return new IOPerfCase<>(name, IO.task(task));
   }
-  
+
   public static <T> IOPerfCase<T> ioPerfCase(String name, IO<T> task) {
     return new IOPerfCase<>(name, task);
   }
-  
+
   public static <T> UIOPerfCase<T> uioPerfCase(String name, Producer<T> task) {
     return new UIOPerfCase<>(name, UIO.task(task));
   }
-  
+
   public static <T> UIOPerfCase<T> uioPerfCase(String name, UIO<T> task) {
     return new UIOPerfCase<>(name, task);
   }
-  
+
   public static <T> TaskPerfCase<T> taskPerfCase(String name, Producer<T> task) {
     return new TaskPerfCase<>(name, Task.task(task));
   }
-  
+
   public static <T> TaskPerfCase<T> taskPerfCase(String name, Task<T> task) {
     return new TaskPerfCase<>(name, task);
   }
-  
+
   public static <F extends Witness, T> PerfCase<F, T> perfCase(String name, MonadDefer<F> monad, Producer<T> task) {
     return perfCase(name, monad, monad.later(task));
   }
-  
+
   public static <F extends Witness, T> PerfCase<F, T> perfCase(String name, MonadDefer<F> monad, Kind<F, T> task) {
     return new PerfCase<>(name, monad, task, monad.pure(unit()));
   }
-  
+
   public record Stats(
     String name,
     Duration total,
@@ -146,7 +146,7 @@ public final class PerfCase<F extends Witness, T> {
     Duration mean,
     Duration median,
     ImmutableMap<Double, Duration> percentiles) {
-    
+
     public Stats {
       checkNonEmpty(name);
       checkNonNull(total);
@@ -156,14 +156,14 @@ public final class PerfCase<F extends Witness, T> {
       checkNonNull(median);
       checkNonNull(percentiles);
     }
-    
-    public Option<Duration> getPercentile(double percentile) { 
-      return percentiles.get(percentile); 
+
+    public Option<Duration> getPercentile(double percentile) {
+      return percentiles.get(percentile);
     }
 
     @Override
     public String toString() {
-      return String.format("Stats[name=%s,total=%s,min=%s,max=%s,mean=%s,median=%s,%s]", 
+      return String.format("Stats[name=%s,total=%s,min=%s,max=%s,mean=%s,median=%s,%s]",
           name, total, min, max, mean, median, percentiles.entries().map(
               t -> String.format("p%s=%s", t.get1(), t.get2())).join(","));
     }
