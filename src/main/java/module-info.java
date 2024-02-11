@@ -4,7 +4,7 @@ module com.github.tonivade.purecheck {
 
   requires transitive com.github.tonivade.purefun;
   requires transitive com.github.tonivade.purefun.core;
-  requires transitive com.github.tonivade.purefun.effect;
-  requires transitive com.github.tonivade.purefun.monad;
+  requires com.github.tonivade.purefun.effect;
+  requires com.github.tonivade.purefun.monad;
   requires transitive com.github.tonivade.purefun.typeclasses;
 }
