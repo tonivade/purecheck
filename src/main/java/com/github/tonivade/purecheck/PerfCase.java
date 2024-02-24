@@ -29,7 +29,6 @@ import com.github.tonivade.purefun.monad.IO;
 import com.github.tonivade.purefun.type.Option;
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
 import com.github.tonivade.purefun.typeclasses.Schedule;
-import com.github.tonivade.purefun.typeclasses.Schedule.ScheduleOf;
 
 public final class PerfCase<F extends Witness, T> {
 
@@ -73,13 +72,11 @@ public final class PerfCase<F extends Witness, T> {
   }
 
   private Schedule<F, Duration, Sequence<Duration>> recursAndCollect(int times) {
-    ScheduleOf<F> scheduleOf = monad.scheduleOf();
-    return this.<Duration>recurs(times).zipRight(scheduleOf.identity()).collectAll();
+    return this.<Duration>recurs(times).zipRight(monad.scheduleOf().identity()).collectAll();
   }
 
   private <A> Schedule<F, A, Integer> recurs(int times) {
-    ScheduleOf<F> scheduleOf = monad.scheduleOf();
-    return scheduleOf.recurs(times);
+    return monad.scheduleOf().recurs(times);
   }
 
   private static Duration mean(ImmutableArray<Duration> array, Duration total) {
