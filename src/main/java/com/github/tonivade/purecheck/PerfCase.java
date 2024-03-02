@@ -54,12 +54,13 @@ public final class PerfCase<F extends Witness, T> {
   private Stats stats(Sequence<Duration> results) {
     ImmutableArray<Duration> array = results.asArray().sort(Duration::compareTo);
     Duration total = array.foldLeft(Duration.ZERO, Duration::plus);
+    Duration mean = mean(array, total);
     return new Stats(
         name,
         total,
         min(array),
         max(array),
-        mean(array, total),
+        mean,
         median(array),
         ImmutableMap.of(
             percentile(50, array),
@@ -67,8 +68,8 @@ public final class PerfCase<F extends Witness, T> {
             percentile(95, array),
             percentile(99, array)),
         ImmutableMap.of(
-            requestPer(array, total, Duration.ofSeconds(1)),
-            requestPer(array, total, Duration.ofMinutes(1)))
+            requestPer(mean, Duration.ofSeconds(1)),
+            requestPer(mean, Duration.ofMinutes(1)))
         );
   }
 
@@ -96,8 +97,7 @@ public final class PerfCase<F extends Witness, T> {
     return array.foldLeft(Duration.ZERO, (d1, d2) -> d1.compareTo(d2) > 0 ? d1 : d2);
   }
 
-  private static Tuple2<Duration, Long> requestPer(ImmutableArray<Duration> array, Duration total, Duration period) {
-    var mean = mean(array, total);
+  private static Tuple2<Duration, Long> requestPer(Duration mean, Duration period) {
     return Tuple.of(period, period.dividedBy(mean));
   }
 
