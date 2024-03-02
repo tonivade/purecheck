@@ -26,7 +26,6 @@ import com.github.tonivade.purefun.data.Sequence;
 import com.github.tonivade.purefun.effect.Task;
 import com.github.tonivade.purefun.effect.UIO;
 import com.github.tonivade.purefun.monad.IO;
-import com.github.tonivade.purefun.type.Option;
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
 import com.github.tonivade.purefun.typeclasses.Schedule;
 
@@ -56,7 +55,7 @@ public final class PerfCase<F extends Witness, T> {
 
   private Stats stats(Sequence<Duration> results) {
     ImmutableArray<Duration> array = results.asArray().sort(Duration::compareTo);
-    Duration total = array.reduce(Duration::plus).getOrElseThrow();
+    Duration total = array.foldLeft(Duration.ZERO, Duration::plus);
     return new Stats(
         name,
         total,
@@ -68,7 +67,11 @@ public final class PerfCase<F extends Witness, T> {
             percentile(50, array),
             percentile(90, array),
             percentile(95, array),
-            percentile(99, array))));
+            percentile(99, array))),
+        ImmutableMap.from(listOf(
+            requestPer(array, total, Duration.ofSeconds(1)),
+            requestPer(array, total, Duration.ofMinutes(1))))
+        );
   }
 
   private Schedule<F, Duration, Sequence<Duration>> recursAndCollect(int times) {
@@ -93,6 +96,11 @@ public final class PerfCase<F extends Witness, T> {
 
   private static Duration max(ImmutableArray<Duration> array) {
     return array.foldLeft(Duration.ZERO, (d1, d2) -> d1.compareTo(d2) > 0 ? d1 : d2);
+  }
+
+  private static Tuple2<Duration, Long> requestPer(ImmutableArray<Duration> array, Duration total, Duration period) {
+    var mean = mean(array, total);
+    return Tuple.of(period, period.dividedBy(mean));
   }
 
   private static Duration min(ImmutableArray<Duration> array) {
@@ -142,7 +150,8 @@ public final class PerfCase<F extends Witness, T> {
     Duration max,
     Duration mean,
     Duration median,
-    ImmutableMap<Double, Duration> percentiles) {
+    ImmutableMap<Double, Duration> percentiles,
+    ImmutableMap<Duration, Long> requestPer) {
 
     public Stats {
       checkNonEmpty(name);
@@ -154,15 +163,25 @@ public final class PerfCase<F extends Witness, T> {
       checkNonNull(percentiles);
     }
 
-    public Option<Duration> getPercentile(double percentile) {
-      return percentiles.get(percentile);
+    public Duration getPercentile(double percentile) {
+      return percentiles.get(percentile).getOrElseThrow();
+    }
+
+    public Long getRequestsPerSeconds() {
+      return requestPer.get(Duration.ofSeconds(1)).getOrElseThrow();
+    }
+
+    public Long getRequestsPerMinute() {
+      return requestPer.get(Duration.ofSeconds(1)).getOrElseThrow();
     }
 
     @Override
     public String toString() {
-      return String.format("Stats[name=%s,total=%s,min=%s,max=%s,mean=%s,median=%s,%s]",
-          name, total, min, max, mean, median, percentiles.entries().map(
-              t -> String.format("p%s=%s", t.get1(), t.get2())).join(","));
+      return String.format("Stats[name=%s,total=%s,min=%s,max=%s,mean=%s,median=%s/%s/%s]",
+          name, total, min, max, mean, median,
+          percentiles.entries().map(t -> String.format("p%s=%s", t.get1(), t.get2())).join(","),
+          requestPer.entries().map(t -> String.format("p%s=%s", t.get1(), t.get2())).join(",")
+          );
     }
   }
 }
