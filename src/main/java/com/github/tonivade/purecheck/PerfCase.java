@@ -7,8 +7,6 @@ package com.github.tonivade.purecheck;
 import static com.github.tonivade.purefun.core.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.core.Precondition.checkNonNull;
 import static com.github.tonivade.purefun.core.Unit.unit;
-import static com.github.tonivade.purefun.data.Sequence.listOf;
-
 import java.time.Duration;
 
 import com.github.tonivade.purecheck.spec.IOPerfCase;
@@ -63,14 +61,14 @@ public final class PerfCase<F extends Witness, T> {
         max(array),
         mean(array, total),
         median(array),
-        ImmutableMap.from(listOf(
+        ImmutableMap.of(
             percentile(50, array),
             percentile(90, array),
             percentile(95, array),
-            percentile(99, array))),
-        ImmutableMap.from(listOf(
+            percentile(99, array)),
+        ImmutableMap.of(
             requestPer(array, total, Duration.ofSeconds(1)),
-            requestPer(array, total, Duration.ofMinutes(1))))
+            requestPer(array, total, Duration.ofMinutes(1)))
         );
   }
 
