@@ -72,7 +72,7 @@ class HelloTest extends IOTestSpec<String> {
   void testOnError() {
     var result = suite("some tests suite",
         it.should("check if it fails")
-          .noGiven()
+          .givenNull()
           .when(error())
           .thenThrows(instanceOf(RuntimeException.class))
       ).run();

@@ -91,11 +91,8 @@ public sealed interface TestCase<F extends Witness, E, T, R> {
       return new WhenStep<>(monad, name, given);
     }
 
+    @SuppressWarnings("NullAway")
     public <T> WhenStep<F, T> givenNull() {
-      return given((T) null);
-    }
-
-    public <T> WhenStep<F, T> noGiven() {
       return given((T) null);
     }
   }

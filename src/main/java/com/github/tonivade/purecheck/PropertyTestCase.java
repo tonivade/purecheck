@@ -13,7 +13,7 @@ import com.github.tonivade.purefun.Witness;
 import com.github.tonivade.purefun.data.Sequence;
 import com.github.tonivade.purefun.typeclasses.Monad;
 
-public interface PropertyTestCase<F extends Witness, E, T, R> {
+public sealed interface PropertyTestCase<F extends Witness, E, T, R> permits PropertyTestCaseImpl {
 
   String name();
 

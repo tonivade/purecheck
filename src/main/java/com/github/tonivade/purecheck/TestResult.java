@@ -109,7 +109,7 @@ public sealed interface TestResult<E, T, R> {
 
     @Override
     public <S> TestResult<E, T, S> map(Function1<R, S> mapper) {
-      return new Success<>(name, input, value.map(mapper::apply));
+      return new Success<>(name, input, value.map(mapper));
     }
 
     @Override
@@ -155,7 +155,7 @@ public sealed interface TestResult<E, T, R> {
 
     @Override
     public <S> TestResult<E, T, S> map(Function1<R, S> mapper) {
-      return new Failure<>(name, input, caller, value.map(mapper::apply), result);
+      return new Failure<>(name, input, caller, value.map(mapper), result);
     }
 
     @Override
@@ -196,7 +196,7 @@ public sealed interface TestResult<E, T, R> {
 
     @Override
     public <S> TestResult<E, T, S> map(Function1<R, S> mapper) {
-      return new Error<>(name, input, caller, error.mapLeft(mapper::apply));
+      return new Error<>(name, input, caller, error.mapLeft(mapper));
     }
 
     @Override
