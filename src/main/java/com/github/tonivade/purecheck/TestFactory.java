@@ -4,12 +4,12 @@
  */
 package com.github.tonivade.purecheck;
 
-import com.github.tonivade.purefun.Witness;
+
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
 
-public interface TestFactory<F extends Witness> {
+public interface TestFactory<F> {
   
-  static <F extends Witness> TestFactory<F> factory(MonadDefer<F> monad) {
+  static <F> TestFactory<F> factory(MonadDefer<F> monad) {
     return () -> monad;
   }
   

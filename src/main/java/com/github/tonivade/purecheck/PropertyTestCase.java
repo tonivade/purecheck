@@ -9,11 +9,11 @@ import static com.github.tonivade.purefun.core.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.core.Precondition.checkNonNull;
 import static com.github.tonivade.purefun.data.Sequence.listOf;
 import com.github.tonivade.purefun.Kind;
-import com.github.tonivade.purefun.Witness;
+
 import com.github.tonivade.purefun.data.Sequence;
 import com.github.tonivade.purefun.typeclasses.Monad;
 
-public sealed interface PropertyTestCase<F extends Witness, E, T, R> permits PropertyTestCaseImpl {
+public sealed interface PropertyTestCase<F, E, T, R> permits PropertyTestCaseImpl {
 
   String name();
 
@@ -22,7 +22,7 @@ public sealed interface PropertyTestCase<F extends Witness, E, T, R> permits Pro
   PropertyTestCase<F, E, T, R> disable(String reason);
 }
 
-final class PropertyTestCaseImpl<F extends Witness, E, T, R> implements PropertyTestCase<F, E, T, R> {
+final class PropertyTestCaseImpl<F, E, T, R> implements PropertyTestCase<F, E, T, R> {
 
   private final Monad<F> monad;
   private final String name;

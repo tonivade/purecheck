@@ -11,7 +11,7 @@ import static com.github.tonivade.purefun.typeclasses.Instances.traverse;
 import java.util.concurrent.Executor;
 
 import com.github.tonivade.purefun.Kind;
-import com.github.tonivade.purefun.Witness;
+
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyList;
 import com.github.tonivade.purefun.data.Sequence;
@@ -19,7 +19,7 @@ import com.github.tonivade.purefun.data.SequenceOf;
 import com.github.tonivade.purefun.data.Sequence_;
 import com.github.tonivade.purefun.typeclasses.Parallel;
 
-public abstract class PureCheck<F extends Witness, E> {
+public abstract class PureCheck<F, E> {
 
   private final Parallel<F, F> parallel;
   private final String name;
