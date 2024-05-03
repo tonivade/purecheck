@@ -37,7 +37,7 @@ public abstract class PureCheck<F, E> {
   }
 
   public Kind<F, Report<E>> runParK() {
-    var sequence = parallel.parSequence(Instances.<Sequence<?>>traverse(), suites.map(TestSuite::runK));
+    var sequence = parallel.parSequence(Instances.traverse(), suites.map(TestSuite::runK));
 
     Kind<F, Sequence<TestSuite.Report<E>>> results = parallel.monad().map(sequence, SequenceOf::narrowK);
 

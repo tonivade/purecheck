@@ -60,7 +60,7 @@ public abstract class PropertyTestSuite<F, E> {
   }
 
   public Kind<F, Report<E>> runParK() {
-    var sequence = parallel.parSequence(Instances.<Sequence<?>>traverse(), tests.map(PropertyTestCase::run));
+    var sequence = parallel.parSequence(Instances.traverse(), tests.map(PropertyTestCase::run));
 
     var results = parallel.monad().map(sequence, SequenceOf::narrowK);
 

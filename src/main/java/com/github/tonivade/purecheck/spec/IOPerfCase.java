@@ -11,7 +11,7 @@ public final class IOPerfCase<T> {
   private final PerfCase<IO<?>, T> perfCase;
 
   public IOPerfCase(String name, IO<T> task) {
-    this.perfCase = new PerfCase<>(name, Instances.<IO<?>>monadDefer(), task, IO.unit());
+    this.perfCase = new PerfCase<>(name, Instances.monadDefer(), task, IO.unit());
   }
 
   private IOPerfCase(PerfCase<IO<?>, T> perfCase) {

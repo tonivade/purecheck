@@ -11,7 +11,7 @@ public final class TaskPerfCase<T> {
   private final PerfCase<Task<?>, T> perfCase;
 
   public TaskPerfCase(String name, Task<T> task) {
-    this.perfCase = new PerfCase<>(name, Instances.<Task<?>>monadDefer(), task, Task.unit());
+    this.perfCase = new PerfCase<>(name, Instances.monadDefer(), task, Task.unit());
   }
 
   private TaskPerfCase(PerfCase<Task<?>, T> perfCase) {

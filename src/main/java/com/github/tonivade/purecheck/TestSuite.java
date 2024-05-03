@@ -61,7 +61,7 @@ public abstract class TestSuite<F, E> {
   }
 
   public Kind<F, Report<E>> runParK() {
-    var sequence = parallel.parSequence(Instances.<Sequence<?>>traverse(), tests.map(TestCase::run));
+    var sequence = parallel.parSequence(Instances.traverse(), tests.map(TestCase::run));
 
     Kind<F, Sequence<TestResult<E, ?, ?>>> results = parallel.monad().map(sequence, SequenceOf::narrowK);
 
