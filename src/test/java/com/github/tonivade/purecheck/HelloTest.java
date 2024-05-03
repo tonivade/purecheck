@@ -29,7 +29,6 @@ import com.github.tonivade.purefun.core.Producer;
 import com.github.tonivade.purefun.core.Unit;
 import com.github.tonivade.purefun.monad.IO;
 import com.github.tonivade.purefun.type.Option;
-import com.github.tonivade.purefun.type.Option_;
 import com.github.tonivade.purefun.typeclasses.Instances;
 
 @ExtendWith(MockitoExtension.class)
@@ -199,7 +198,7 @@ class HelloTest extends IOTestSpec<String> {
 
   @Test
   void functorLaws() {
-    var functor = Instances.<Option_>functor();
+    var functor = Instances.<Option<?>>functor();
 
     Function1<Integer, String> f = String::valueOf;
     Function1<String, Integer> g = String::length;

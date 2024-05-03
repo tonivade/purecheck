@@ -27,10 +27,6 @@ public abstract class TestSpec<F, E> {
   private final Applicative<F> applicative;
   private final Monad<F> monad;
 
-  protected TestSpec(Class<F> type) {
-    this(new Instance<>(type) { });
-  }
-
   protected TestSpec(Instance<F> instance) {
     this(instance.runtime(), instance.monadDefer(), instance.applicative());
   }

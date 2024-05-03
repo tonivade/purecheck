@@ -5,16 +5,17 @@
 package com.github.tonivade.purecheck.spec;
 
 import com.github.tonivade.purecheck.TestSpec;
-import com.github.tonivade.purefun.monad.IO_;
+import com.github.tonivade.purefun.monad.IO;
+import com.github.tonivade.purefun.typeclasses.Instance;
 
 /**
  * A silly class to define the test case factory and reuse
  *
  * @author tonivade
  */
-public abstract class IOTestSpec<E> extends TestSpec<IO_, E> {
+public abstract class IOTestSpec<E> extends TestSpec<IO<?>, E> {
 
   protected IOTestSpec() {
-    super(IO_.class);
+    super(new Instance<IO<?>>() {});
   }
 }

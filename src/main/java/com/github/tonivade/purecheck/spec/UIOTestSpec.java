@@ -5,16 +5,17 @@
 package com.github.tonivade.purecheck.spec;
 
 import com.github.tonivade.purecheck.TestSpec;
-import com.github.tonivade.purefun.effect.UIO_;
+import com.github.tonivade.purefun.effect.UIO;
+import com.github.tonivade.purefun.typeclasses.Instance;
 
 /**
  * A silly class to define the test case factory and reuse
  *
  * @author tonivade
  */
-public abstract class UIOTestSpec<E> extends TestSpec<UIO_, E> {
+public abstract class UIOTestSpec<E> extends TestSpec<UIO<?>, E> {
 
   protected UIOTestSpec() {
-    super(UIO_.class);
+    super(new Instance<UIO<?>>() {});
   }
 }

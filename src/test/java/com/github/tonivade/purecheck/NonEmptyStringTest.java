@@ -15,11 +15,11 @@ import org.junit.jupiter.api.Test;
 
 import com.github.tonivade.purecheck.spec.UIOTestSpec;
 import com.github.tonivade.purefun.data.NonEmptyString;
-import com.github.tonivade.purefun.effect.UIO_;
+import com.github.tonivade.purefun.effect.UIO;
 
 class NonEmptyStringTest extends UIOTestSpec<String> {
 
-  private final TestSuite<UIO_, String> suite = suite("NonEmptyString",
+  private final TestSuite<UIO<?>, String> suite = suite("NonEmptyString",
 
       it.should("not accept null")
           .<String>givenNull()
