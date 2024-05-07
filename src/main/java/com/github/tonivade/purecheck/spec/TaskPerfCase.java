@@ -23,6 +23,6 @@ public final class TaskPerfCase<T> {
   }
 
   public Task<Stats> run(int times) {
-    return perfCase.run(times).fix(TaskOf.toTask());
+    return perfCase.run(times).fix(TaskOf::toTask);
   }
 }

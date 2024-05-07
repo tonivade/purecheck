@@ -54,7 +54,7 @@ public abstract class TestSuite<F, E> {
   public Kind<F, Report<E>> runK() {
     var sequence = Instances.<Sequence<?>>traverse().sequence(parallel.monad(), tests.map(TestCase::run));
 
-    Kind<F, Sequence<TestResult<E, ?, ?>>> results = parallel.monad().map(sequence, SequenceOf::narrowK);
+    Kind<F, Sequence<TestResult<E, ?, ?>>> results = parallel.monad().map(sequence, SequenceOf::toSequence);
 
     return parallel.monad().map(results, xs -> new Report<>(name, xs));
 
@@ -63,7 +63,7 @@ public abstract class TestSuite<F, E> {
   public Kind<F, Report<E>> runParK() {
     var sequence = parallel.parSequence(Instances.traverse(), tests.map(TestCase::run));
 
-    Kind<F, Sequence<TestResult<E, ?, ?>>> results = parallel.monad().map(sequence, SequenceOf::narrowK);
+    Kind<F, Sequence<TestResult<E, ?, ?>>> results = parallel.monad().map(sequence, SequenceOf::toSequence);
 
     return parallel.monad().map(results, xs -> new Report<>(name, xs));
   }

@@ -53,7 +53,7 @@ public abstract class PropertyTestSuite<F, E> {
   public Kind<F, Report<E>> runK() {
     var sequence = Instances.<Sequence<?>>traverse().sequence(parallel.monad(), tests.map(PropertyTestCase::run));
 
-    var results = parallel.monad().map(sequence, SequenceOf::narrowK);
+    var results = parallel.monad().map(sequence, SequenceOf::toSequence);
 
     return parallel.monad().map(results, xs -> new Report<>(name, xs));
 
@@ -62,7 +62,7 @@ public abstract class PropertyTestSuite<F, E> {
   public Kind<F, Report<E>> runParK() {
     var sequence = parallel.parSequence(Instances.traverse(), tests.map(PropertyTestCase::run));
 
-    var results = parallel.monad().map(sequence, SequenceOf::narrowK);
+    var results = parallel.monad().map(sequence, SequenceOf::toSequence);
 
     return parallel.monad().map(results, xs -> new Report<>(name, xs));
   }

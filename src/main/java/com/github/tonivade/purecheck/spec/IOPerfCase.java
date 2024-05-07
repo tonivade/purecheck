@@ -23,6 +23,6 @@ public final class IOPerfCase<T> {
   }
 
   public IO<Stats> run(int times) {
-    return perfCase.run(times).fix(IOOf.toIO());
+    return perfCase.run(times).fix(IOOf::toIO);
   }
 }

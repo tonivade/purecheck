@@ -23,6 +23,6 @@ public final class UIOPerfCase<T> {
   }
 
   public UIO<Stats> run(int times) {
-    return perfCase.run(times).fix(UIOOf.toUIO());
+    return perfCase.run(times).fix(UIOOf::toUIO);
   }
 }
