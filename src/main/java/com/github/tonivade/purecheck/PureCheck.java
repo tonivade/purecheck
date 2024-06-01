@@ -16,7 +16,7 @@ import com.github.tonivade.purefun.data.SequenceOf;
 import com.github.tonivade.purefun.typeclasses.Instances;
 import com.github.tonivade.purefun.typeclasses.Parallel;
 
-public abstract class PureCheck<F, E> {
+public abstract class PureCheck<F extends Kind<F, ?>, E> {
 
   private final Parallel<F, F> parallel;
   private final String name;

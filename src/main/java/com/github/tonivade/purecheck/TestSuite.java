@@ -27,7 +27,7 @@ import com.github.tonivade.purefun.typeclasses.Parallel;
  * @param <F> type of the kind
  * @param <E> type of the error
  */
-public abstract class TestSuite<F, E> {
+public abstract class TestSuite<F extends Kind<F, ?>, E> {
 
   private final Parallel<F, F> parallel;
   private final String name;

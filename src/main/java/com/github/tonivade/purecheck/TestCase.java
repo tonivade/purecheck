@@ -45,7 +45,7 @@ import com.github.tonivade.purefun.typeclasses.MonadDefer;
  * @param <T> type of the input value
  * @param <R> type of the result returned by the operation
  */
-public sealed interface TestCase<F, E, T, R> {
+public sealed interface TestCase<F extends Kind<F, ?>, E, T, R> {
 
   String name();
 
@@ -69,11 +69,11 @@ public sealed interface TestCase<F, E, T, R> {
    * @param <F> type of the test case
    * @return a new test case
    */
-  static <F> GivenStep<F> test(MonadDefer<F> monad, String name) {
+  static <F extends Kind<F, ?>> GivenStep<F> test(MonadDefer<F> monad, String name) {
     return new GivenStep<>(monad, name);
   }
 
-  final class GivenStep<F> {
+  final class GivenStep<F extends Kind<F, ?>> {
 
     private final MonadDefer<F> monad;
     private final String name;
@@ -97,7 +97,7 @@ public sealed interface TestCase<F, E, T, R> {
     }
   }
 
-  final class WhenStep<F, T> {
+  final class WhenStep<F extends Kind<F, ?>, T> {
 
     private final MonadDefer<F> monad;
     private final String name;
@@ -134,7 +134,7 @@ public sealed interface TestCase<F, E, T, R> {
     }
   }
 
-  final class ThenStep<F, T, R> {
+  final class ThenStep<F extends Kind<F, ?>, T, R> {
 
     private final MonadDefer<F> monad;
     private final String name;
@@ -200,7 +200,7 @@ public sealed interface TestCase<F, E, T, R> {
  * @param <E> type of error generated
  * @param <T> type of the result returned by the operation
  */
-final class TestCaseImpl<F, E, T, R> implements TestCase<F, E, T, R> {
+final class TestCaseImpl<F extends Kind<F, ?>, E, T, R> implements TestCase<F, E, T, R> {
 
   private final MonadDefer<F> monad;
   private final String name;
@@ -311,7 +311,7 @@ final class TestCaseImpl<F, E, T, R> implements TestCase<F, E, T, R> {
   }
 }
 
-final class TestCaseEnd<F, E, T, R> implements TestCase<F, E, T, R> {
+final class TestCaseEnd<F extends Kind<F, ?>, E, T, R> implements TestCase<F, E, T, R> {
 
   private final Monad<F> monad;
   private final String name;

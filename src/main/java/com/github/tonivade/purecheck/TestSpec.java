@@ -8,7 +8,7 @@ import static com.github.tonivade.purefun.core.Precondition.checkNonNull;
 
 import java.util.concurrent.Executor;
 
-
+import com.github.tonivade.purefun.Kind;
 import com.github.tonivade.purefun.concurrent.Future;
 import com.github.tonivade.purefun.data.NonEmptyList;
 import com.github.tonivade.purefun.typeclasses.Applicative;
@@ -19,7 +19,7 @@ import com.github.tonivade.purefun.typeclasses.MonadDefer;
 import com.github.tonivade.purefun.typeclasses.Parallel;
 import com.github.tonivade.purefun.typeclasses.Runtime;
 
-public abstract class TestSpec<F, E> {
+public abstract class TestSpec<F extends Kind<F, ?>, E> {
 
   protected final TestFactory<F> it;
 

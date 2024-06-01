@@ -27,7 +27,7 @@ import com.github.tonivade.purefun.monad.IO;
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
 import com.github.tonivade.purefun.typeclasses.Schedule;
 
-public final class PerfCase<F, T> {
+public final class PerfCase<F extends Kind<F, ?>, T> {
 
   private final String name;
   private final MonadDefer<F> monad;
@@ -133,11 +133,11 @@ public final class PerfCase<F, T> {
     return new TaskPerfCase<>(name, task);
   }
 
-  public static <F, T> PerfCase<F, T> perfCase(String name, MonadDefer<F> monad, Producer<T> task) {
+  public static <F extends Kind<F, ?>, T> PerfCase<F, T> perfCase(String name, MonadDefer<F> monad, Producer<T> task) {
     return perfCase(name, monad, monad.later(task));
   }
 
-  public static <F, T> PerfCase<F, T> perfCase(String name, MonadDefer<F> monad, Kind<F, T> task) {
+  public static <F extends Kind<F, ?>, T> PerfCase<F, T> perfCase(String name, MonadDefer<F> monad, Kind<F, T> task) {
     return new PerfCase<>(name, monad, task, monad.pure(unit()));
   }
 

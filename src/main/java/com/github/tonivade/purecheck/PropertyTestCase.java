@@ -13,7 +13,7 @@ import com.github.tonivade.purefun.Kind;
 import com.github.tonivade.purefun.data.Sequence;
 import com.github.tonivade.purefun.typeclasses.Monad;
 
-public sealed interface PropertyTestCase<F, E, T, R> permits PropertyTestCaseImpl {
+public sealed interface PropertyTestCase<F extends Kind<F, ?>, E, T, R> permits PropertyTestCaseImpl {
 
   String name();
 
@@ -22,7 +22,7 @@ public sealed interface PropertyTestCase<F, E, T, R> permits PropertyTestCaseImp
   PropertyTestCase<F, E, T, R> disable(String reason);
 }
 
-final class PropertyTestCaseImpl<F, E, T, R> implements PropertyTestCase<F, E, T, R> {
+final class PropertyTestCaseImpl<F extends Kind<F, ?>, E, T, R> implements PropertyTestCase<F, E, T, R> {
 
   private final Monad<F> monad;
   private final String name;
