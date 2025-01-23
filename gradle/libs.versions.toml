@@ -2,7 +2,7 @@
 purefunVersion = "5.0"
 junitEngineVersion = "5.11.4"
 junitPlatformVersion = "1.11.4"
-versionsVersion = "0.51.0"
+versionsVersion = "0.52.0"
 nexusVersion = "2.0.0"
 mockitoVersion = "5.15.2"
 errorproneVersion = "2.36.0"
