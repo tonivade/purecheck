@@ -70,8 +70,10 @@ dependencies {
   implementation libs.purefunMonad
   implementation libs.purefunEffect
   runtimeOnly libs.purefunInstances
+  
+  testImplementation platform(libs.junitBom)
   testImplementation libs.junitJupiter
-  testImplementation libs.junitRunner
+  testRuntimeOnly libs.junitLauncher
   testImplementation libs.mockitoCore
   testImplementation libs.mockitoJupiter
 }
