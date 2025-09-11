@@ -170,7 +170,7 @@ public final class PerfCase<F extends Kind<F, ?>, T> {
     }
 
     public Long getRequestsPerMinute() {
-      return requestPer.get(Duration.ofSeconds(1)).getOrElseThrow();
+      return requestPer.get(Duration.ofMinutes(1)).getOrElseThrow();
     }
 
     @Override
