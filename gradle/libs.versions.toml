@@ -4,7 +4,7 @@ junitVersion = "6.0.2"
 versionsVersion = "0.53.0"
 nexusVersion = "2.0.0"
 mockitoVersion = "5.21.0"
-errorproneVersion = "2.45.0"
+errorproneVersion = "2.46.0"
 errorpronePluginVersion = "4.3.0"
 nullawayVersion = "0.12.15"
 
