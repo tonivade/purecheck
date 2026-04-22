@@ -6,7 +6,7 @@ nexusVersion = "2.0.0"
 mockitoVersion = "5.23.0"
 errorproneVersion = "2.49.0"
 errorpronePluginVersion = "5.1.0"
-nullawayVersion = "0.13.3"
+nullawayVersion = "0.13.4"
 
 [libraries]
 purefunTypeclasses = { group = "com.github.tonivade", name = "purefun-typeclasses", version.ref = "purefunVersion" }
