@@ -1,5 +1,5 @@
 [versions]
-purefunVersion = "5.2"
+purefunVersion = "6.0-SNAPSHOT"
 junitVersion = "6.0.3"
 versionsVersion = "0.54.0"
 nexusVersion = "2.0.0"
