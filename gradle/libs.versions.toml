@@ -1,7 +1,7 @@
 [versions]
 purefunVersion = "6.0-SNAPSHOT"
 junitVersion = "6.1.2"
-versionsVersion = "0.58.0"
+versionsVersion = "0.59.0"
 nexusVersion = "2.0.0"
 mockitoVersion = "5.23.0"
 errorproneVersion = "2.50.0"
