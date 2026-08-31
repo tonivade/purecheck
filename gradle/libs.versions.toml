@@ -5,7 +5,7 @@ versionsVersion = "0.61.0"
 nexusVersion = "2.0.0"
 mockitoVersion = "5.23.0"
 errorproneVersion = "2.50.0"
-errorpronePluginVersion = "5.1.0"
+errorpronePluginVersion = "5.1.1"
 nullawayVersion = "0.14.0"
 
 [libraries]
