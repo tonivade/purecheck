@@ -13,13 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-import com.github.tonivade.purecheck.spec.UIOTestSpec;
+import com.github.tonivade.purecheck.spec.IOTestSpec;
 import com.github.tonivade.purefun.data.NonEmptyString;
-import com.github.tonivade.purefun.effect.UIO;
+import com.github.tonivade.purefun.monad.IO;
 
-class NonEmptyStringTest extends UIOTestSpec<String> {
+class NonEmptyStringTest extends IOTestSpec<String> {
 
-  private final TestSuite<UIO<?>, String> suite = suite("NonEmptyString",
+  private final TestSuite<IO<?>, String> suite = suite("NonEmptyString",
 
       it.should("not accept null")
           .<String>givenNull()

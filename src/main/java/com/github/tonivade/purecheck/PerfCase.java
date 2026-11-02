@@ -7,13 +7,11 @@ package com.github.tonivade.purecheck;
 import static com.github.tonivade.purefun.core.Precondition.checkNonEmpty;
 import static com.github.tonivade.purefun.core.Precondition.checkNonNull;
 import static com.github.tonivade.purefun.core.Unit.unit;
+
 import java.time.Duration;
 
 import com.github.tonivade.purecheck.spec.IOPerfCase;
-import com.github.tonivade.purecheck.spec.TaskPerfCase;
-import com.github.tonivade.purecheck.spec.UIOPerfCase;
 import com.github.tonivade.purefun.Kind;
-
 import com.github.tonivade.purefun.core.Producer;
 import com.github.tonivade.purefun.core.Tuple;
 import com.github.tonivade.purefun.core.Tuple2;
@@ -21,8 +19,6 @@ import com.github.tonivade.purefun.core.Unit;
 import com.github.tonivade.purefun.data.ImmutableArray;
 import com.github.tonivade.purefun.data.ImmutableMap;
 import com.github.tonivade.purefun.data.Sequence;
-import com.github.tonivade.purefun.effect.Task;
-import com.github.tonivade.purefun.effect.UIO;
 import com.github.tonivade.purefun.monad.IO;
 import com.github.tonivade.purefun.typeclasses.MonadDefer;
 import com.github.tonivade.purefun.typeclasses.Schedule;
@@ -115,22 +111,6 @@ public final class PerfCase<F extends Kind<F, ?>, T> {
 
   public static <T> IOPerfCase<T> ioPerfCase(String name, IO<T> task) {
     return new IOPerfCase<>(name, task);
-  }
-
-  public static <T> UIOPerfCase<T> uioPerfCase(String name, Producer<T> task) {
-    return new UIOPerfCase<>(name, UIO.task(task));
-  }
-
-  public static <T> UIOPerfCase<T> uioPerfCase(String name, UIO<T> task) {
-    return new UIOPerfCase<>(name, task);
-  }
-
-  public static <T> TaskPerfCase<T> taskPerfCase(String name, Producer<T> task) {
-    return new TaskPerfCase<>(name, Task.task(task));
-  }
-
-  public static <T> TaskPerfCase<T> taskPerfCase(String name, Task<T> task) {
-    return new TaskPerfCase<>(name, task);
   }
 
   public static <F extends Kind<F, ?>, T> PerfCase<F, T> perfCase(String name, MonadDefer<F> monad, Producer<T> task) {
